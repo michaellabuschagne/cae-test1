@@ -39,7 +39,7 @@ The objective of this exercise is to implement an application that:
    writes them to a dynamodb table named ``cae-test1``
 2. Generates fake energy prices every 5 minutes and writes them to the same
    table - ``cae-test1``
-3. Calculates each customer's hourly hourly energy cost and writes them to
+3. Calculates each customer's hourly energy cost and writes them to the table
    ``cae-test1``
 4. Provides a HTTP endpoint to query a customer's bill by id and date bounds in
 
@@ -58,7 +58,7 @@ Place all your cloudformation resource definitions into ``cae-test1.cf.json``.
 
 Your lambda function code and their direct dependencies should go into the
 folder ``lambdas``. Dependencies will include the npm packages and custom
-scripts your application will require.
+scripts that your application will require.
 
 # Key specifications and constraints
 
@@ -68,16 +68,15 @@ scripts your application will require.
     ```
     {
     	"customerId": 5,
-	"intervalStart": "2020-08-05T00:00:00Z",
-	"intervalEnd" : "2020-08-05T00:05:00Z",
-	"usage": 500
+      "intervalStart": "2020-08-05T00:00:00Z",
+      "intervalEnd" : "2020-08-05T00:05:00Z",
+      "usage": 500
    }
    ```
 - Assume that energy prices are a simple floating point value always less than
     1.0. So the application should generate price information records of the form:
     ```
     {
-    	"customerId": 5,
       "intervalStart": "2020-08-05T00:00:00Z",
       "intervalEnd" : "2020-08-05T00:05:00Z",
       "price": 0.05
@@ -122,14 +121,19 @@ scripts your application will require.
   deploy``“
 - The application should not require any other means to deploy it save for 
   creating a bucket named ``cae-test1-deployment-artifacts`` and then running 
-  ``npm run deploy``.
+  ``npm run deploy``. So all resources including the dynmodb table should be
+  created using cloudformation
 
 # Other considerations
 
 - Adopt a consistent Javascript code style.
-- If there is any thing you would want us to know about your work write it in a file called ``implementation.md``
+- If there is any thing you would want us to know about your work write it in a 
+   file called ``implementation.md``. For instance it would be useful to
+   describe your Partition and Sort key schema in that document.
 - Feel free to use OpenApi3 to define your HTTP api. You can just place your
     OpenAPI spec in a file called ``cae-test1.openapi.yaml``.
+- You should consider using dynamodb streams for computing the hourly interval
+    costs.
 
 # Asking Questions
 
