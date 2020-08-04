@@ -1,0 +1,22 @@
+{
+  "name": "cae-test1",
+  "version": "1.0.0",
+  "description": "Hey there!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "predeploy": "mkdir -p build && aws cloudformation package  --template-file ./src/cae-test1.cf.json --output-template build/cae-test1.yaml --s3-bucket cae-test1-deployment-artifacts",
+    "deploy": "aws cloudformation deploy --stack-name cae-test1 --template-file ./build/cae-test1.yaml --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enpoweredveteran/cae-test1.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/enpoweredveteran/cae-test1/issues"
+  },
+  "homepage": "https://github.com/enpoweredveteran/cae-test1#readme"
+}

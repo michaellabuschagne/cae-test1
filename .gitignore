@@ -1,0 +1,9 @@
+# node modules
+**/*/node_modules
+
+# Build folder
+build
+
+# editor files
+*.swp
+.editorconfig
