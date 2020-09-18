@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node -e 'require(\"./src/handler.js\").generateFakeEnergyData()'",
-    "build": "mkdir -p ./build &&  && cross-env NODE_ENV=production npm install --prefix dist && zip -rXFS9 function.zip dist",
-    "push-artifacts": "aws s3 cp ."
+    "clean": "rimraf dist generateFakeCustomerUsage.zip",
+    "build": "babel src package.json package-lock.json --out-dir dist --copy-files && cross-env NODE_ENV=production npm install --prefix dist && zip -rXFS9 generateFakeCustomerUsage.zip dist",
+    "push": "aws s3 cp generateFakeCustomerUsage.zip s3://cae-test1-deployment-artifacts-eu-west-1"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "nodemon": "^2.0.4"
   },
   "dependencies": {
+    "@babel/runtime-corejs3": "^7.11.2",
     "aws-sdk": "^2.755.0"
   }
 }

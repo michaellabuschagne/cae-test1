@@ -42,7 +42,7 @@
               "Effect": "Allow",
               "Principal": {
                 "Service": [
-                  "ec2.amazonaws.com"
+                  "lambda.amazonaws.com"
                 ]
               },
               "Action": [
@@ -130,13 +130,12 @@
       "Type" : "AWS::Lambda::Function",
       "Properties" : {
           "Code" : {
-            "S3Bucket": "asd",
-            "S3Key": "generateCustomerDataLambda.zip"
+            "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
+            "S3Key": "generateFakeCustomerUsage.zip"
           },
           "Description" : "Lambda Function which generated Customer Usage data and pushes it to DynamoDB",
-          "Environment" : "Dev",
           "FunctionName" : "GenerateCustomerDataLambda",
-          "Handler" : "handler.generateFakeCustomerData",
+          "Handler" : "dist/handler.generateFakeCustomerData",
           "MemorySize" : 128,
           "Role" : {"Fn::GetAtt" : ["lambdaGenerateExecutionRole", "Arn"] },
           "Runtime" : "nodejs12.x",

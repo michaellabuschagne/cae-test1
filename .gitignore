@@ -10,5 +10,5 @@ build
 .editorconfig
 
 **/*/dist/
-**/function.zip
+**/*.zip
 **/.DS_Store
