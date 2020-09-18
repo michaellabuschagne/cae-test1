@@ -1,0 +1,15 @@
+{
+  "packageDir": "lambdas",
+  "componentDir": "components",
+  "packages": {
+    "generateFakeCustomerUsage": {
+      "version": "1.0.0",
+      "directory": "generateFakeCustomerUsage"
+    },
+    "generateFakeEnergyPricing": {
+      "version": "1.0.0",
+      "directory": "generateFakeEnergyPricing"
+    }
+  },
+  "strictMode": true
+}

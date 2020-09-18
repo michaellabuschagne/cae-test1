@@ -6,6 +6,8 @@ aws.config.region = 'eu-west-1'; // TODO switch to environment variable
 
 const dynamoDbClient = new aws.DynamoDB();
 
+exports.generateFakeEnergyData = generateFakeEnergyData;
+
 async function generateFakeEnergyData() {
     const epoch = generateEpoch();
     const energyData = generateEnergyRecord(epoch);
