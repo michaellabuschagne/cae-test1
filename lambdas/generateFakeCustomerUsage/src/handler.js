@@ -3,7 +3,7 @@
 const aws = require('aws-sdk'); // TODO only import DynamoDB
 
 aws.config.region = 'eu-west-1'; // TODO switch to environment variable
-console.log('AWS Region:', aws.config.region);
+console.debug('AWS Region:', aws.config.region);
 
 const dynamoDbClient = new aws.DynamoDB();
 
@@ -70,6 +70,5 @@ const generateItems = (epoch) => {
         });
         // This is the format in which data will be received by remote clients
     }
-    console.log(customerUsageData);
     return customerUsageData;
 }

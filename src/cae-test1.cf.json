@@ -131,7 +131,7 @@
       "Properties" : {
           "Code" : {
             "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-            "S3Key": "generateFakeCustomerUsage.zip"
+            "S3Key": "generateFakeCustomerUsage-v4.zip"
           },
           "Description" : "Lambda Function which generated Customer Usage data and pushes it to DynamoDB",
           "FunctionName" : "GenerateCustomerDataLambda",
@@ -140,6 +140,22 @@
           "Role" : {"Fn::GetAtt" : ["lambdaGenerateExecutionRole", "Arn"] },
           "Runtime" : "nodejs12.x",
           "Timeout" : 5
+        }
+    },
+    "generateEnergyDataLambda": {
+      "Type" : "AWS::Lambda::Function",
+      "Properties" : {
+          "Code" : {
+            "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
+            "S3Key": "generateFakeEnergyPricing.zip"
+          },
+          "Description" : "Lambda Function which generated Energy Pricing data and pushes it to DynamoDB",
+          "FunctionName" : "GenerateEnergyDataLambda",
+          "Handler" : "dist/handler.generateFakeEnergyData",
+          "MemorySize" : 128,
+          "Role" : {"Fn::GetAtt" : ["lambdaGenerateExecutionRole", "Arn"] },
+          "Runtime" : "nodejs12.x",
+          "Timeout" : 3
         }
     }
   }
