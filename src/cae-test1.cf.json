@@ -31,6 +31,31 @@
           "WriteCapacityUnits": "100"
         }
       }
+    },
+    "lambdaArtifactsS3Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "AccessControl": "Private",
+        "BucketName": "cae-test1-deployment-artifacts-eu-west-1",
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "Expire artifacts after 14 days",
+              "Status": "Enabled",
+              "ExpirationInDays": 14
+            }
+          ]
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls" : true,
+          "BlockPublicPolicy" : true,
+          "IgnorePublicAcls" : true,
+          "RestrictPublicBuckets" : true
+        },
+        "VersioningConfiguration": {
+          "Status" : "Enabled"
+        }
+      }
     }
   }
 }
