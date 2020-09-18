@@ -67,7 +67,7 @@ scripts that your application will require.
   should generate fake usage records illustrated by the example:
     ```
     {
-    	"customerId": 5,
+      "customerId": 5,
       "intervalStart": "2020-08-05T00:00:00Z",
       "intervalEnd" : "2020-08-05T00:05:00Z",
       "usage": 500

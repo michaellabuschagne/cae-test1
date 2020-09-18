@@ -1,0 +1,36 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "caeDynamoDb": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "enpoweredCae",
+        "BillingMode": "PROVISIONED",
+        "KeySchema": [
+          {
+            "AttributeName": "Type",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "Interval",
+            "KeyType": "RANGE"
+          }
+        ],
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "Type",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "Interval",
+            "AttributeType": "N"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": "5",
+          "WriteCapacityUnits": "100"
+        }
+      }
+    }
+  }
+}
