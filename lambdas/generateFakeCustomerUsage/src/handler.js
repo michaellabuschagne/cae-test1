@@ -1,15 +1,15 @@
 'use strict';
 
-const aws = require('aws-sdk'); // TODO only import DynamoDB
+const AWS = require('aws-sdk'); // TODO only import DynamoDB
 
-aws.config.region = 'eu-west-1'; // TODO switch to environment variable
-console.debug('AWS Region:', aws.config.region);
 
-const dynamoDbClient = new aws.DynamoDB();
 
-exports.generateFakeCustomerData = generateFakeCustomerData;
+AWS.config.region = 'eu-west-1'; // TODO switch to environment variable
+console.debug('AWS Region:', AWS.config.region);
 
-async function generateFakeCustomerData() {
+const dynamoDb = new AWS.DynamoDB();
+
+exports.generateFakeCustomerData = function generateFakeCustomerData() {
     const epoch = generateEpoch();
     const customerUsageData = generateItems(epoch);
     console.log('Writing ' + customerUsageData.length + ' records');
@@ -42,7 +42,7 @@ const writeDynamoDbItem = customerUsage => {
         TableName: 'enpoweredCae'
     };
 
-    dynamoDbClient.putItem(params).promise()
+    dynamoDb.putItem(params).promise()
         .then(result => {
             console.log(`Successfuly wrote item ${result}`);
         }).catch(error => {

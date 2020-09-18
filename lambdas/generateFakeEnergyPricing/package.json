@@ -8,9 +8,9 @@
     "clean": "rimraf dist *.zip",
     "copy": "babel src package.json package-lock.json --out-dir dist --copy-files",
     "prod": "cross-env NODE_ENV=production npm install --prefix dist",
-    "zip": "zip -rXFS9 generateFakeEnergyPricing.zip dist",
+    "zip": "zip -rXFS9 generateFakeEnergyPricing-v1.zip dist",
     "build": "npm run clean && npm run copy && npm run prod && npm run zip",
-    "s3upload": "aws s3 cp generateFakeEnergyPricing.zip s3://cae-test1-deployment-artifacts-eu-west-1"
+    "s3upload": "aws s3 cp generateFakeEnergyPricing-v1.zip s3://cae-test1-deployment-artifacts-eu-west-1"
   },
   "keywords": [],
   "author": "",
