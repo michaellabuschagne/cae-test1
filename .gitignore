@@ -2,9 +2,13 @@
 **/*/node_modules
 node_modules/
 
-# Build folder
+# build folder
 build
 
 # editor files
 *.swp
 .editorconfig
+
+**/*/dist/
+**/function.zip
+**/.DS_Store

@@ -5,7 +5,9 @@
   "main": "handler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node -e 'require(\"./src/handler.js\").generateFakeEnergyData()'"
+    "dev": "node -e 'require(\"./src/handler.js\").generateFakeEnergyData()'",
+    "build": "mkdir -p ./build &&  && cross-env NODE_ENV=production npm install --prefix dist && zip -rXFS9 function.zip dist",
+    "push-artifacts": "aws s3 cp ."
   },
   "keywords": [],
   "author": "",
