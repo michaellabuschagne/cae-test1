@@ -32,6 +32,75 @@
         }
       }
     },
+    "lambdaGenerateExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Description": "Role for Lambdas which generate and push data to Dynamo DB",
+        "RoleName": "LambdaGenerateExecutionRole"
+      }
+    },
+    "lambdaGenerateDataExecutionPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cloudwatch:*",
+                "logs:*",
+                "dynamodb:PutItem"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "caeDynamoDb",
+                    "Arn"
+                  ]
+                },
+                "arn:aws:cloudwatch:*:*:*",
+                "arn:aws:logs:*:*:*",
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "lambdaArtifactsS3Bucket",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "PolicyName": "LambdaGenerateDataExecutionPolicy",
+        "Roles": [
+          "LambdaGenerateExecutionRole"
+        ]
+      }
+    },
     "lambdaArtifactsS3Bucket": {
       "Type": "AWS::S3::Bucket",
       "Properties": {
@@ -47,13 +116,13 @@
           ]
         },
         "PublicAccessBlockConfiguration": {
-          "BlockPublicAcls" : true,
-          "BlockPublicPolicy" : true,
-          "IgnorePublicAcls" : true,
-          "RestrictPublicBuckets" : true
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
         },
         "VersioningConfiguration": {
-          "Status" : "Enabled"
+          "Status": "Enabled"
         }
       }
     }
