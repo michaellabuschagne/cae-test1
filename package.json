@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/enpoweredveteran/cae-test1/issues"
   },
-  "homepage": "https://github.com/enpoweredveteran/cae-test1#readme"
+  "homepage": "https://github.com/enpoweredveteran/cae-test1#readme",
+  "devDependencies": {
+    "monomono": "^0.2.2"
+  }
 }

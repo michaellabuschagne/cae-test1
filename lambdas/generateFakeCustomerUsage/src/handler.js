@@ -2,15 +2,6 @@
 
 const aws = require('aws-sdk'); // TODO only import DynamoDB
 
-// console.log('Init', aws.config.region);
-// console.log('env.DEV',process.env.DEV);
-// if (process.env.DEV) {
-//     console.log('DEV detected');
-//     aws.config.update({
-//         endpoint: "http://localhost:4566"
-//     });
-// }
-
 aws.config.region = 'eu-west-1'; // TODO switch to environment variable
 console.log('AWS Region:', aws.config.region);
 
@@ -58,14 +49,6 @@ const writeDynamoDbItem = customerUsage => {
             console.log(`Failed to write item ${error}`);
         });
 }
-
-// const prepareData = (customerUsageArray)  => {
-//     return customerUsageArray.map(usage => {
-//         return {
-//             interval
-//         }
-//     });
-// }
 
 const generateEpoch = () => {
     const currentDate = new Date();

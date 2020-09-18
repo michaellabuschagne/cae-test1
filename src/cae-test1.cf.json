@@ -125,6 +125,23 @@
           "Status": "Enabled"
         }
       }
+    },
+    "generateCustomerDataLambda": {
+      "Type" : "AWS::Lambda::Function",
+      "Properties" : {
+          "Code" : {
+            "S3Bucket": "asd",
+            "S3Key": "generateCustomerDataLambda.zip"
+          },
+          "Description" : "Lambda Function which generated Customer Usage data and pushes it to DynamoDB",
+          "Environment" : "Dev",
+          "FunctionName" : "GenerateCustomerDataLambda",
+          "Handler" : "handler.generateFakeCustomerData",
+          "MemorySize" : 128,
+          "Role" : {"Fn::GetAtt" : ["lambdaGenerateExecutionRole", "Arn"] },
+          "Runtime" : "nodejs12.x",
+          "Timeout" : 5
+        }
     }
   }
 }

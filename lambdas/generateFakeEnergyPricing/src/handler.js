@@ -65,5 +65,3 @@ const generateEnergyRecord = (epoch) => {
     };
     // This is the format in which data will be received
 };
-
-generateFakeEnergyData();
