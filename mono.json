@@ -13,6 +13,10 @@
     "dynamodbstreamhandler": {
       "version": "1.0.0",
       "directory": "dynamoDbStreamHandler"
+    },
+    "customerbillapi": {
+      "version": "1.0.0",
+      "directory": "customerbillapi"
     }
   },
   "strictMode": true

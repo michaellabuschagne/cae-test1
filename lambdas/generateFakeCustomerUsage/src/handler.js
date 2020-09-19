@@ -60,7 +60,7 @@ const generateEpoch = () => {
 
 const generateItems = (epoch) => {
     const customerUsageData = [];
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 1000; i++) {
         customerUsageData.push({
             customerId: i,
             intervalStart: epoch,

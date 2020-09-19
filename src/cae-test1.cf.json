@@ -28,7 +28,7 @@
         ],
         "ProvisionedThroughput": {
           "ReadCapacityUnits": "5",
-          "WriteCapacityUnits": "100"
+          "WriteCapacityUnits": "45"
         },
         "StreamSpecification": {
           "StreamViewType": "NEW_IMAGE"
@@ -58,6 +58,29 @@
         "RoleName": "LambdaGenerateExecutionRole"
       }
     },
+    "lambdaCustomerBillQueryExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Description": "Role for Lambdas which generate and push data to Dynamo DB",
+        "RoleName": "LambdaCustomerBillQueryExecutionRole"
+      }
+    },
     "lambdaGenerateDataExecutionPolicy": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
@@ -69,7 +92,8 @@
               "Action": [
                 "cloudwatch:*",
                 "logs:*",
-                "dynamodb:PutItem"
+                "dynamodb:PutItem",
+                "dynamodb:Query"
               ],
               "Resource": [
                 {
@@ -101,7 +125,8 @@
         "PolicyName": "LambdaGenerateDataExecutionPolicy",
         "Roles": [
           "LambdaGenerateExecutionRole",
-          "LambdaDDBStreamExecutionRole"
+          "LambdaDDBStreamExecutionRole",
+          "LambdaCustomerBillQueryExecutionRole"
         ]
       }
     },
@@ -135,7 +160,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "generateFakeCustomerUsage-v7.zip"
+          "S3Key": "generateFakeCustomerUsage-v8.zip"
         },
         "Description": "Lambda Function which generated Customer Usage data and pushes it to DynamoDB",
         "FunctionName": "GenerateCustomerDataLambda",
@@ -148,7 +173,7 @@
           ]
         },
         "Runtime": "nodejs12.x",
-        "Timeout": 5
+        "Timeout": 30
       }
     },
     "generateEnergyDataLambda": {
@@ -288,7 +313,7 @@
     "dynamoDbStreamCustomerUsageTrigger": {
       "Type": "AWS::Lambda::EventSourceMapping",
       "Properties": {
-        "BatchSize": 20,
+        "BatchSize": 1000,
         "Enabled": true,
         "EventSourceArn": {
           "Fn::GetAtt": [
@@ -305,6 +330,82 @@
         "MaximumBatchingWindowInSeconds": 300,
         "ParallelizationFactor": 1,
         "StartingPosition": "LATEST"
+      }
+    },
+    "apiGatewayDDBReadPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cloudwatch:*",
+                "logs:*",
+                "dynamodb:Query"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "caeDynamoDb",
+                    "Arn"
+                  ]
+                },
+                "arn:aws:cloudwatch:*:*:*",
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "LambdaGenerateDataExecutionPolicy",
+        "Roles": [
+          "ApiGatewayCustomerDDBQueryRole"
+        ]
+      }
+    },
+    "apiGatewayCustomerDDBQueryRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "apigateway.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Description": "Role for API Gateway to query Dynamo DB",
+        "RoleName": "ApiGatewayCustomerDDBQueryRole"
+      }
+    },
+    "queryCustomerBillLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
+          "S3Key": "customerBillApi-v3.zip"
+        },
+        "Description": "Lambda Function which will query Customer Usage data from DynamoDB",
+        "FunctionName": "QueryCustomerBillLambda",
+        "Handler": "dist/handler.queryCustomerBill",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "lambdaCustomerBillQueryExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 60
       }
     }
   }
