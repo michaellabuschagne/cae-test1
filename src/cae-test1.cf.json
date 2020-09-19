@@ -173,7 +173,7 @@
       "Properties": {
         "Description": "Trigger the GenerateCustomerDataLambda and GenerateEnergyDataLambda every 5 minutes",
         "Name": "GenerateEnergyData-GenerateCustomerDataLambda-CRON",
-        "ScheduleExpression": "rate(5 minutes)",
+        "ScheduleExpression": "rate(1 minute)",
         "Targets": [
           {
             "Arn": {
@@ -194,6 +194,44 @@
             "Id": "generateEnergyDataLambda"
           }
         ]
+      }
+    },
+    "generateCustomerDataLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "generateCustomerDataLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "generateCustomerDataCron",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "generateEnergyDataLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "generateEnergyDataLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "generateCustomerDataCron",
+            "Arn"
+          ]
+        }
       }
     }
   }
