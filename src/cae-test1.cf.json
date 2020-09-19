@@ -100,7 +100,8 @@
         },
         "PolicyName": "LambdaGenerateDataExecutionPolicy",
         "Roles": [
-          "LambdaGenerateExecutionRole"
+          "LambdaGenerateExecutionRole",
+          "LambdaDDBStreamExecutionRole"
         ]
       }
     },
@@ -139,7 +140,7 @@
         "Description": "Lambda Function which generated Customer Usage data and pushes it to DynamoDB",
         "FunctionName": "GenerateCustomerDataLambda",
         "Handler": "dist/handler.generateFakeCustomerData",
-        "MemorySize": 128,
+        "MemorySize": 256,
         "Role": {
           "Fn::GetAtt": [
             "lambdaGenerateExecutionRole",
@@ -160,7 +161,7 @@
         "Description": "Lambda Function which generated Energy Pricing data and pushes it to DynamoDB",
         "FunctionName": "GenerateEnergyDataLambda",
         "Handler": "dist/handler.generateFakeEnergyData",
-        "MemorySize": 128,
+        "MemorySize": 256,
         "Role": {
           "Fn::GetAtt": [
             "lambdaGenerateExecutionRole",
@@ -268,12 +269,12 @@
       "Properties": {
         "Code": {
           "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "dynamoDbStreamHandler-v5.zip"
+          "S3Key": "dynamoDbStreamHandler-v6.zip"
         },
         "Description": "Lambda Function which handle DynamoDB stream data and maitain hourly Customer Usage",
         "FunctionName": "DDBStreamCustomerDataHandlerLambda",
         "Handler": "dist/handler.rollUpCustomerUsageData",
-        "MemorySize": 128,
+        "MemorySize": 256,
         "Role": {
           "Fn::GetAtt": [
             "lambdaDDBStreamExecutionRole",
