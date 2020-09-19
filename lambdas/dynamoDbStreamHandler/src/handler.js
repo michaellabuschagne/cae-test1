@@ -7,11 +7,16 @@ console.debug('AWS Region:', AWS.config.region);
 
 const dynamoDb = new AWS.DynamoDB();
 
-exports.generateFakeCustomerData = function generateFakeCustomerData() {
-    const epoch = generateEpoch();
-    const customerUsageData = generateItems(epoch);
-    console.log('Writing ' + customerUsageData.length + ' records');
-    writeItems(customerUsageData);
+exports.rollUpCustomerUsageData = function rollUpCustomerUsageData(event, context, callback) {
+    console.log(JSON.stringify(event, null, 2));
+    console.log('Writing ' + event.Records.length + ' records');
+    event.Records.forEach(function(record) {
+        console.log(record.eventID);
+        console.log(record.eventName);
+        console.log('DynamoDB Record: %j', record.dynamodb);
+    });
+
+    // writeItems(customerUsageData);
 }
 
 const writeItems = (customerUsageArray) => {
@@ -47,27 +52,4 @@ const writeDynamoDbItem = customerUsage => {
         }).catch(error => {
             console.log(`Failed to write item ${error}`);
         });
-}
-
-const generateEpoch = () => {
-    const currentDate = new Date();
-    currentDate.setSeconds(0);
-    currentDate.setMilliseconds(0);
-    const epoch = currentDate.getTime()/1000;
-    console.log(epoch);
-    return epoch;
-}
-
-const generateItems = (epoch) => {
-    const customerUsageData = [];
-    for (let i = 1; i <= 10; i++) {
-        customerUsageData.push({
-            customerId: i,
-            intervalStart: epoch,
-            intervalEnd: epoch + (5*60*1000),
-            usage: Math.floor(Math.random() * 1000)
-        });
-        // This is the format in which data will be received by remote clients
-    }
-    return customerUsageData;
 }

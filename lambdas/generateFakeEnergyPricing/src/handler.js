@@ -39,7 +39,8 @@ const writeDynamoDbItem = energyPriceInterval => {
         },
         TableName: 'enpoweredCae'
     };
-
+    // TODO pass tablename as env var
+    
     dynamoDbClient.putItem(params).promise()
         .then(result => {
             console.log(`Successfuly wrote item ${JSON.stringify(result)}`);

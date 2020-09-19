@@ -29,6 +29,9 @@
         "ProvisionedThroughput": {
           "ReadCapacityUnits": "5",
           "WriteCapacityUnits": "100"
+        },
+        "StreamSpecification": {
+          "StreamViewType": "NEW_IMAGE"
         }
       }
     },
@@ -232,6 +235,75 @@
             "Arn"
           ]
         }
+      }
+    },
+    "lambdaDDBStreamExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaDynamoDBExecutionRole"
+        ],
+        "Description": "Role for Lambda which handles DynamoDB stream data",
+        "RoleName": "LambdaDDBStreamExecutionRole"
+      }
+    },
+    "dynamoDbStreamHandlerLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
+          "S3Key": "dynamoDbStreamHandler-v1.zip"
+        },
+        "Description": "Lambda Function which handle DynamoDB stream data and maitain hourly Customer Usage",
+        "FunctionName": "DDBStreamCustomerDataHandlerLambda",
+        "Handler": "dist/handler.rollUpCustomerUsageData",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "lambdaDDBStreamExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 30
+      }
+    },
+    "dynamoDbStreamCustomerUsageTrigger": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "BatchSize": 20,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "caeDynamoDb",
+            "StreamArn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "dynamoDbStreamHandlerLambda",
+            "Arn"
+          ]
+        },
+        "MaximumBatchingWindowInSeconds": 300,
+        "ParallelizationFactor": 1,
+        "StartingPosition": "LATEST"
       }
     }
   }

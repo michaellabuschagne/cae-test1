@@ -9,6 +9,10 @@
     "generateFakeEnergyPricing": {
       "version": "1.0.0",
       "directory": "generateFakeEnergyPricing"
+    },
+    "dynamodbstreamhandler": {
+      "version": "1.0.0",
+      "directory": "dynamoDbStreamHandler"
     }
   },
   "strictMode": true
