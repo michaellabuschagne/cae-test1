@@ -392,7 +392,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "customerBillApi-v3.zip"
+          "S3Key": "customerBillApi-v5.zip"
         },
         "Description": "Lambda Function which will query Customer Usage data from DynamoDB",
         "FunctionName": "QueryCustomerBillLambda",
@@ -406,6 +406,55 @@
         },
         "Runtime": "nodejs12.x",
         "Timeout": 60
+      }
+    },
+    "queryCustomerBillApiGateway": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "BodyS3Location": {
+          "Bucket": "cae-test1-deployment-artifacts-eu-west-1",
+          "Key": "customerBillApi-v1.json"
+        },
+        "Description": "Customer billing data API",
+        "EndpointConfiguration": {
+          "Types": [
+            "EDGE"
+          ]
+        },
+        "Name": "CustomerBilling"
+      }
+    },
+    "queryCustomerBillApiGatewayLambdaPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:invokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "queryCustomerBillLambda",
+            "Arn"
+          ]
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:aws:execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "queryCustomerBillApiGateway"
+              },
+              "/*"
+            ]
+          ]
+        }
       }
     }
   }

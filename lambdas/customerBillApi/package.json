@@ -9,9 +9,11 @@
     "clean": "rimraf dist *.zip",
     "copy": "babel src package.json package-lock.json --out-dir dist --copy-files",
     "prod": "cross-env NODE_ENV=production npm install --prefix dist",
-    "zip": "zip -rXFS9 customerBillApi-v3.zip dist",
+    "zip": "zip -rXFS9 customerBillApi-v5.zip dist",
     "build": "npm run clean && npm run copy && npm run prod && npm run zip",
-    "s3upload": "aws s3 cp customerBillApi-v3.zip s3://cae-test1-deployment-artifacts-eu-west-1"
+    "s3upload:lambda" : "aws s3 cp customerBillApi-v5.zip s3://cae-test1-deployment-artifacts-eu-west-1",
+    "s3upload:apispec" : "aws s3 cp src/openapi/customerBillApi-v1.json s3://cae-test1-deployment-artifacts-eu-west-1",
+    "s3upload": "npm run s3upload:lambda && npm run s3upload:apispec"
   },
   "keywords": [],
   "author": "",

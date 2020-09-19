@@ -7,18 +7,18 @@ const HOURLY_CUST_ID_TYPE_PREFIX = 'hourly_customer_';
 exports.queryCustomerBill = (event, context, callback) => {
     console.log(JSON.stringify(event));
 
-    // TODO vaidate query params "event.queryStringParameters.customerid"
+    // TODO validate query params "event.queryStringParameters.customerid"
     console.log(event.queryStringParameters);
     const { customerid, start, end } = event.queryStringParameters;
-
-    const type = `${HOURLY_CUST_ID_TYPE_PREFIX}${parseInt(customerid).toString()}`;
+    const customerIdNoLeading = parseInt(customerid);
+    const type = `${HOURLY_CUST_ID_TYPE_PREFIX}${customerIdNoLeading}`;
     const epochIntervalStart = Date.parse(start)/1000;
     const epochIntervalEnd = (Date.parse(end)/1000);
 
     queryCustomerBill(type, epochIntervalStart, epochIntervalEnd).then(result => {
-        const responeObject = result.Items.map(item => {
+        const responseObject = result.Items.map(item => {
             return {
-                customerId: customerid,
+                customerId: customerIdNoLeading,
                 intervalStart: epochToIsoDateString(item.Interval),
                 intervalEnd: epochToIsoDateString(item.Interval + 3540),
                 totalUsage: item.TotalUsage,
@@ -27,7 +27,7 @@ exports.queryCustomerBill = (event, context, callback) => {
         });
         callback(null, {
             statusCode: 200,
-            body: JSON.stringify(responeObject),
+            body: JSON.stringify(responseObject),
             headers: {
                 'Access-Control-Allow-Origin': '*',
             },
@@ -44,7 +44,7 @@ const epochToIsoDateString = epoch => {
 }
 
 const queryCustomerBill = (type, epochIntervalStart, epochIntervalEnd) => {
-    var params = {
+    let params = {
         KeyConditionExpression: '#type = :val and #interval BETWEEN :startInterval AND :endInterval',
         ExpressionAttributeNames: {
             '#type': 'Type',
