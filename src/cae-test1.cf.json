@@ -411,17 +411,9 @@
     "queryCustomerBillApiGateway": {
       "Type": "AWS::ApiGateway::RestApi",
       "Properties": {
-        "BodyS3Location": {
-          "Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "Key": "customerBillApi-v1.json"
-        },
+        "Name": "CustomerBilling",
         "Description": "Customer billing data API",
-        "EndpointConfiguration": {
-          "Types": [
-            "EDGE"
-          ]
-        },
-        "Name": "CustomerBilling"
+        "FailOnWarnings": true
       }
     },
     "queryCustomerBillApiGatewayLambdaPermission": {
@@ -455,6 +447,173 @@
             ]
           ]
         }
+      }
+    },
+    "apiGatewayCloudWatchLogsRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "apigateway.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "ApiGatewayLogsPolicy",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:DescribeLogGroups",
+                    "logs:DescribeLogStreams",
+                    "logs:PutLogEvents",
+                    "logs:GetLogEvents",
+                    "logs:FilterLogEvents"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "apiGatewayAccount": {
+      "Type": "AWS::ApiGateway::Account",
+      "Properties": {
+        "CloudWatchRoleArn": {
+          "Fn::GetAtt": [
+            "apiGatewayCloudWatchLogsRole",
+            "Arn"
+          ]
+        }
+      }
+    },
+    "customerBillApiGatewayStage": {
+      "DependsOn": [
+        "apiGatewayAccount"
+      ],
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "DeploymentId": {
+          "Ref": "apiDeployment"
+        },
+        "MethodSettings": [
+          {
+            "DataTraceEnabled": true,
+            "HttpMethod": "*",
+            "LoggingLevel": "INFO",
+            "ResourcePath": "/*"
+          }
+        ],
+        "RestApiId": {
+          "Ref": "queryCustomerBillApiGateway"
+        },
+        "StageName": "LATEST"
+      }
+    },
+    "apiDeployment": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "DependsOn": [
+        "queryCustomerBillRequest"
+      ],
+      "Properties": {
+        "RestApiId": {
+          "Ref": "queryCustomerBillApiGateway"
+        },
+        "StageName": "DummyStage"
+      }
+    },
+    "customerBillQueryResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "queryCustomerBillApiGateway"
+        },
+        "ParentId": {
+          "Fn::GetAtt": [
+            "queryCustomerBillApiGateway",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "bill"
+      }
+    },
+    "queryCustomerBillRequest": {
+      "DependsOn": "queryCustomerBillApiGatewayLambdaPermission",
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "GET",
+        "Integration": {
+          "Type": "AWS",
+          "IntegrationHttpMethod": "POST",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "queryCustomerBillLambda",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          },
+          "IntegrationResponses": [
+            {
+              "StatusCode": 200
+            }
+          ],
+          "RequestTemplates": {
+            "application/json": {
+              "Fn::Join": [
+                "",
+                [
+                  "{",
+                  "\"name\": \"$input.params('name')\"",
+                  "}"
+                ]
+              ]
+            }
+          }
+        },
+        "RequestParameters": {
+          "method.request.querystring.name": false
+        },
+        "ResourceId": {
+          "Ref": "customerBillQueryResource"
+        },
+        "RestApiId": {
+          "Ref": "queryCustomerBillApiGateway"
+        },
+        "MethodResponses": [
+          {
+            "StatusCode": 200
+          }
+        ]
       }
     }
   }
