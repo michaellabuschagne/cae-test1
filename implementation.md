@@ -5,9 +5,10 @@
 
 # Design decisions
 ## Interval times stored as Epoch
-- Although the exercise specifically provides the date format in Zulu Time it would be more appropriate to store the interval as an epoch in DynamoDB.
-- Firstly epochs can be stored as numbers, and therefore consume less space in the table and this less cost.
-- Secondly, retrieval operations are more efficient when comparing numbers rather than strings.
+- Although the exercise specifically provides the date in the format ``2020-08-05T07:00:00Z`` it would be more appropriate to store the interval as an epoch in DynamoDB.
+- Reasoning:
+    - Firstly epochs can be stored as numbers, and therefore consume less space in the table and therefore will cost less (especially when considerning the solution at scale).
+    - Secondly, retrieval operations are more efficient when comparing numbers rather than strings.
 - Assuming the devices generating and sending this data in that format are decoupled and we could convert into epoch time at the point of data ingest.
 ## Not storing the interval end times
 - Given that the interval end times can be inferred from the interval start times it may be better not store to save storage space.
