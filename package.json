@@ -4,7 +4,7 @@
   "description": "Hey there!",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:lambda": "mono exec 'npm run test'",
     "mono": "mono",
     "install": "npm run mono bootstrap",
     "build:lambda": "mono exec 'npm run build'",

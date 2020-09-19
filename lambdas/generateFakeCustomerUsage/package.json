@@ -4,14 +4,14 @@
   "description": "",
   "main": "handler.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node -e 'require(\"./src/handler.js\").generateFakeCustomerData()'",
+    "test": "npm run start",
     "clean": "rimraf dist *.zip",
     "copy": "babel src package.json package-lock.json --out-dir dist --copy-files",
     "prod": "cross-env NODE_ENV=production npm install --prefix dist",
-    "zip": "zip -rXFS9 generateFakeCustomerUsage-v6.zip dist",
-    "build": "npm run clean && npm run copy && npm run prod && npm run zip",
-    "s3upload": "aws s3 cp generateFakeCustomerUsage-v6.zip s3://cae-test1-deployment-artifacts-eu-west-1"
+    "zip": "zip -rXFS9 generateFakeCustomerUsage-v7.zip dist",
+    "build": "npm run test && npm run clean && npm run copy && npm run prod && npm run zip",
+    "s3upload": "aws s3 cp generateFakeCustomerUsage-v7.zip s3://cae-test1-deployment-artifacts-eu-west-1"
   },
   "keywords": [],
   "author": "",

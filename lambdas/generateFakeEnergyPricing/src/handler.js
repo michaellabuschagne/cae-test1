@@ -21,7 +21,7 @@ const writeItems = (energyPriceIntervals) => {
 
 const writeDynamoDbItem = energyPriceInterval => {
     const date = new Date();
-    const type = `energy_price_${date.getFullYear()}_${date.getMonth()+1}_${date.getDate()}`;
+    const type = `energy_price_${date.getUTCFullYear()}_${date.getUTCMonth()+1}_${date.getUTCDate()}_${date.getUTCHours()}`;
     const interval = new Date(energyPriceInterval.intervalStart).getTime().toString();
     const price = energyPriceInterval.price.toString();
     console.log(type, interval, price);

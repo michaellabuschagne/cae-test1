@@ -134,7 +134,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "generateFakeCustomerUsage-v6.zip"
+          "S3Key": "generateFakeCustomerUsage-v7.zip"
         },
         "Description": "Lambda Function which generated Customer Usage data and pushes it to DynamoDB",
         "FunctionName": "GenerateCustomerDataLambda",
@@ -155,7 +155,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "generateFakeEnergyPricing-v1.zip"
+          "S3Key": "generateFakeEnergyPricing-v3.zip"
         },
         "Description": "Lambda Function which generated Energy Pricing data and pushes it to DynamoDB",
         "FunctionName": "GenerateEnergyDataLambda",
@@ -268,7 +268,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "dynamoDbStreamHandler-v1.zip"
+          "S3Key": "dynamoDbStreamHandler-v5.zip"
         },
         "Description": "Lambda Function which handle DynamoDB stream data and maitain hourly Customer Usage",
         "FunctionName": "DDBStreamCustomerDataHandlerLambda",
