@@ -62,7 +62,7 @@
     },
     "APIGatewayEndpoint": {
       "Description": "The HTTP endpoint for the Customer Bill API",
-      "Value": { "Fn::Sub" : "https://${queryCustomerBillApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${customerBillApiGatewayStage}/" }
+      "Value": { "Fn::Sub" : "https://${queryCustomerBillApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${customerBillApiGatewayStage}/bill?customerid=005&start=2020-09-20T00:00:00Z&end=2020-12-31T07:00:00Z" }
     }
   },
   "Resources": {
