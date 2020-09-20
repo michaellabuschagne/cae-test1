@@ -10,8 +10,9 @@
     "build:lambda": "mono exec 'npm run build'",
     "s3upload:lambda": "mono exec 'npm run s3upload'",
     "cfn:pkg": "mkdir -p build && aws cloudformation package  --template-file ./src/cae-test1.cf.json --output-template build/cae-test1.yaml --s3-bucket cae-test1-deployment-artifacts",
-    "cfn:deploy": "aws cloudformation deploy --stack-name cae-test1 --template-file ./build/cae-test1.yaml --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM",
-    "cfn:pkg:dep": "npm run cfn:pkg && npm run cfn:deploy",
+    "cfn:dep": "aws cloudformation deploy --stack-name cae-test1 --template-file ./build/cae-test1.yaml --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM",
+    "cfn:out": "aws cloudformation describe-stacks --stack-name cae-test1 --query \"Stacks[0].Outputs[]\" --output yaml",
+    "cfn:pkg:dep": "npm run cfn:pkg && npm run cfn:dep",
     "deploy": "npm run build:lambda && npm run s3upload:lambda && npm run cfn:pkg:dep"
   },
   "repository": {

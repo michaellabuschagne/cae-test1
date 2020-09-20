@@ -1,5 +1,20 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "ArtifactsS3BucketPrefix": {
+      "Type": "String",
+      "Default": "cae-test1-deployment-artifacts-",
+      "Description": "The S3 bucket used to store the Lambda function binaries"
+    }
+  },
+  "Outputs" : {
+    "ArtifactsS3Bucket" : {
+      "Description" : "Lambda artifact store for this stack",
+      "Value" : {
+        "Ref": "lambdaArtifactsS3Bucket"
+      }
+    }
+  },
   "Resources": {
     "caeDynamoDb": {
       "Type": "AWS::DynamoDB::Table",
@@ -134,7 +149,19 @@
       "Type": "AWS::S3::Bucket",
       "Properties": {
         "AccessControl": "Private",
-        "BucketName": "cae-test1-deployment-artifacts-eu-west-1",
+        "BucketName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "ArtifactsS3BucketPrefix"
+              },
+              {
+                "Ref": "AWS::Region"
+              }
+            ]
+          ]
+        },
         "LifecycleConfiguration": {
           "Rules": [
             {
@@ -604,7 +631,7 @@
             "StatusCode": 200
           }
         ],
-        "RequestValidatorId" : {
+        "RequestValidatorId": {
           "Ref": "queryCustomerBillRequestValidator"
         }
       }
