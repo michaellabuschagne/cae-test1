@@ -5,12 +5,53 @@
       "Type": "String",
       "Default": "cae-test1-deployment-artifacts-",
       "Description": "The S3 bucket used to store the Lambda function binaries"
+    },
+    "DynamoDBTableName": {
+      "Type": "String",
+      "Default": "enpoweredCae",
+      "Description": "The DynamoDB Table which the application will use"
+    },
+    "DDBReadCapacityUnits": {
+      "Type": "Number",
+      "Default": 5,
+      "Description": "The RCUs allocated to the DynamoDB Table"
+    },
+    "DDBWriteCapacityUnits": {
+      "Type": "Number",
+      "Default": 50,
+      "Description": "The RCUs allocated to the DynamoDB Table"
+    },
+    "GenerateFakeCustomerUsageLambdaS3Key": {
+      "Type": "String",
+      "Default": "generateFakeCustomerUsage-v8.zip",
+      "Description": "The name of the generateFakeCustomerUsage binary"
+    },
+    "GenerateEnergyDataLambdaS3Key": {
+      "Type": "String",
+      "Default": "generateFakeEnergyPricing-v3.zip",
+      "Description": "The name of the generateFakeCustomerUsage binary"
+    },
+    "DynamoDbStreamHandlerLambdaS3Key": {
+      "Type": "String",
+      "Default": "dynamoDbStreamHandler-v6.zip",
+      "Description": "The name of the generateFakeCustomerUsage binary"
+    },
+    "QueryCustomerBillLambdaS3Key": {
+      "Type": "String",
+      "Default": "customerBillApi-v5.zip",
+      "Description": "The name of the generateFakeCustomerUsage binary"
     }
   },
-  "Outputs" : {
-    "ArtifactsS3Bucket" : {
-      "Description" : "Lambda artifact store for this stack",
-      "Value" : {
+  "Outputs": {
+    "DynamoDBTableName": {
+      "Description": "The DynamoDB Table which the application will use",
+      "Value": {
+        "Ref": "DynamoDBTableName"
+      }
+    },
+    "ArtifactsS3Bucket": {
+      "Description": "Lambda artifact store for this stack",
+      "Value": {
         "Ref": "lambdaArtifactsS3Bucket"
       }
     }
@@ -19,7 +60,9 @@
     "caeDynamoDb": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
-        "TableName": "enpoweredCae",
+        "TableName": {
+          "Ref": "DynamoDBTableName"
+        },
         "BillingMode": "PROVISIONED",
         "KeySchema": [
           {
@@ -42,8 +85,12 @@
           }
         ],
         "ProvisionedThroughput": {
-          "ReadCapacityUnits": 5,
-          "WriteCapacityUnits": 50
+          "ReadCapacityUnits": {
+            "Ref": "DDBReadCapacityUnits"
+          },
+          "WriteCapacityUnits": {
+            "Ref": "DDBWriteCapacityUnits"
+          }
         },
         "StreamSpecification": {
           "StreamViewType": "NEW_IMAGE"
@@ -186,8 +233,12 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "generateFakeCustomerUsage-v8.zip"
+          "S3Bucket": {
+            "Ref": "lambdaArtifactsS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "GenerateFakeCustomerUsageLambdaS3Key"
+          }
         },
         "Description": "Lambda Function which generated Customer Usage data and pushes it to DynamoDB",
         "FunctionName": "GenerateCustomerDataLambda",
@@ -207,8 +258,12 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "generateFakeEnergyPricing-v3.zip"
+          "S3Bucket": {
+            "Ref": "lambdaArtifactsS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "GenerateEnergyDataLambdaS3Key"
+          }
         },
         "Description": "Lambda Function which generated Energy Pricing data and pushes it to DynamoDB",
         "FunctionName": "GenerateEnergyDataLambda",
@@ -320,8 +375,12 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "dynamoDbStreamHandler-v6.zip"
+          "S3Bucket": {
+            "Ref": "lambdaArtifactsS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "DynamoDbStreamHandlerLambdaS3Key"
+          }
         },
         "Description": "Lambda Function which handle DynamoDB stream data and maitain hourly Customer Usage",
         "FunctionName": "DDBStreamCustomerDataHandlerLambda",
@@ -418,8 +477,12 @@
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "S3Bucket": "cae-test1-deployment-artifacts-eu-west-1",
-          "S3Key": "customerBillApi-v5.zip"
+          "S3Bucket": {
+            "Ref": "lambdaArtifactsS3Bucket"
+          },
+          "S3Key": {
+            "Ref": "QueryCustomerBillLambdaS3Key"
+          }
         },
         "Description": "Lambda Function which will query Customer Usage data from DynamoDB",
         "FunctionName": "QueryCustomerBillLambda",
