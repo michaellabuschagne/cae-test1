@@ -27,8 +27,8 @@
           }
         ],
         "ProvisionedThroughput": {
-          "ReadCapacityUnits": "5",
-          "WriteCapacityUnits": "45"
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 50
         },
         "StreamSpecification": {
           "StreamViewType": "NEW_IMAGE"
@@ -561,7 +561,7 @@
         "AuthorizationType": "NONE",
         "HttpMethod": "GET",
         "Integration": {
-          "Type": "AWS",
+          "Type": "AWS_PROXY",
           "IntegrationHttpMethod": "POST",
           "Uri": {
             "Fn::Join": [
@@ -587,21 +587,11 @@
               "StatusCode": 200
             }
           ],
-          "RequestTemplates": {
-            "application/json": {
-              "Fn::Join": [
-                "",
-                [
-                  "{",
-                  "\"name\": \"$input.params('name')\"",
-                  "}"
-                ]
-              ]
-            }
-          }
         },
         "RequestParameters": {
-          "method.request.querystring.name": false
+          "method.request.querystring.customerid": true,
+          "method.request.querystring.start": true,
+          "method.request.querystring.end": true
         },
         "ResourceId": {
           "Ref": "customerBillQueryResource"
