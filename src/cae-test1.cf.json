@@ -18,7 +18,7 @@
     },
     "DDBWriteCapacityUnits": {
       "Type": "Number",
-      "Default": 50,
+      "Default": 250,
       "Description": "The RCUs allocated to the DynamoDB Table"
     },
     "GenerateFakeCustomerUsageLambdaS3Key": {
@@ -311,7 +311,7 @@
       "Properties": {
         "Description": "Trigger the GenerateCustomerDataLambda and GenerateEnergyDataLambda every 5 minutes",
         "Name": "GenerateEnergyData-GenerateCustomerDataLambda-CRON",
-        "ScheduleExpression": "rate(1 minute)",
+        "ScheduleExpression": "rate(5 minutes)",
         "Targets": [
           {
             "Arn": {
@@ -420,7 +420,15 @@
           ]
         },
         "Runtime": "nodejs12.x",
-        "Timeout": 30
+        "Timeout": 30,
+        "Environment": {
+          "Variables" : {
+            "DDB_TABLE_NAME" : {
+              "Ref": "DynamoDBTableName"
+            }
+          }
+        }
+
       }
     },
     "dynamoDbStreamCustomerUsageTrigger": {
@@ -522,7 +530,15 @@
           ]
         },
         "Runtime": "nodejs12.x",
-        "Timeout": 60
+        "Timeout": 60,
+        "Environment": {
+          "Variables" : {
+            "DDB_TABLE_NAME" : {
+              "Ref": "DynamoDBTableName"
+            }
+          }
+        }
+
       }
     },
     "queryCustomerBillApiGateway": {

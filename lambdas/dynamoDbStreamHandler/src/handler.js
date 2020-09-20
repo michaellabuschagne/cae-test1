@@ -1,22 +1,30 @@
 'use strict';
 
-const AWS = require('aws-sdk'); // TODO only import DynamoDB
-
-AWS.config.region = 'eu-west-1'; // TODO switch to environment variable
+const AWS = require('aws-sdk');
+AWS.config.region = process.env.AWS_REGION;
 console.debug('AWS Region:', AWS.config.region);
+// TODO implement logging framework
+const dynamoDbClient = new AWS.DynamoDB();
 
-const dynamoDb = new AWS.DynamoDB();
+const CONFIG = {
+    TESTING: process.env.TESTING || false,
+    DDB_TABLE_NAME: process.env.DDB_TABLE_NAME || 'enpoweredCae'
+};
 
 const CUST_ID_TYPE_PREFIX = 'customer';
 const ENERGY_PRICE_TYPE_PREFIX = 'energy_price';
 const DDB_INSERT_EVENT_NAME = 'INSERT';
+const HOURLY_CUST_ID_TYPE_PREFIX = 'hourly_customer_';
 
-exports.rollUpCustomerUsageData = function rollUpCustomerUsageData(event, context, callback) {
+
+exports.rollUpCustomerUsageData = function rollUpCustomerUsageData(event) {
+    console.log('CONFIG', CONFIG);
     try {
-        console.log(JSON.stringify(event, null, 2));
+        console.debug(JSON.stringify(event, null, 2));
         processEventData(event.Records);
     } catch (error) {
-        console.log(error);
+        // TODO Write data to SQS dead letter queue for reprocessing
+        console.error(error);
     }
 }
 
@@ -28,7 +36,7 @@ const processEventData = (records) => {
     const custUsgEnrgyPrcMap = records
         .reduce((acc, item) => {
             if (item.eventName !== DDB_INSERT_EVENT_NAME) {
-                console.log(`Ignoring ${item.eventName}`);
+                console.debug(`Ignoring ${item.eventName}`);
                 return acc;
             }
             const newImage = item.dynamodb.NewImage;
@@ -42,7 +50,7 @@ const processEventData = (records) => {
             }
             return acc;
         }, initialMap);
-    console.log(custUsgEnrgyPrcMap.get(CUST_ID_TYPE_PREFIX));
+    console.debug(custUsgEnrgyPrcMap.get(CUST_ID_TYPE_PREFIX));
 
     const custHourlyUsageMap = new Map();
     for (const [customerId, usageArr] of custUsgEnrgyPrcMap.get(CUST_ID_TYPE_PREFIX)) {
@@ -52,7 +60,9 @@ const processEventData = (records) => {
             const key = `${customerId}_${epochHourInterval}`;
             let energyPrice = 0;
             if (!custUsgEnrgyPrcMap.get(ENERGY_PRICE_TYPE_PREFIX).has(interval)) {
-                console.log(`Enery Price for interval ${interval} not available`);
+                console.error(`Energy Price for interval ${interval} not available`);
+                // TODO fix design issue where assumption was energy price
+                // TODO for the needed intervals will always be in the stream data
             } else {
                 energyPrice = custUsgEnrgyPrcMap.get(ENERGY_PRICE_TYPE_PREFIX).get(interval);
             }
@@ -67,17 +77,17 @@ const processEventData = (records) => {
             return acc;
         }, custHourlyUsageMap);
     }
-    console.log(custHourlyUsageMap);
+    console.debug(custHourlyUsageMap);
     writeItems(custHourlyUsageMap);
 }
 
 const processCustomerUsageData = (acc, newImage) => {
     const { Type : { S : customerId }, Usage : { N : usage }, Interval : { N : interval} } = newImage;
-    const cutomerUsageMap = acc.get(CUST_ID_TYPE_PREFIX);
+    const customerUsageMap = acc.get(CUST_ID_TYPE_PREFIX);
     const usageInt = parseFloat(usage);
-    cutomerUsageMap.has(customerId)
-        ? cutomerUsageMap.get(customerId).push({usage: usageInt, interval})
-        : cutomerUsageMap.set(customerId, [{usage: usageInt, interval}]);
+    customerUsageMap.has(customerId)
+        ? customerUsageMap.get(customerId).push({usage: usageInt, interval})
+        : customerUsageMap.set(customerId, [{usage: usageInt, interval}]);
 }
 
 const truncEpochToHour = (epoch) => {
@@ -92,17 +102,17 @@ const writeItems = (custHourlyUsageMap) => {
         try {
             writeDynamoDbItem(usage);
         } catch (error) {
-            console.log(`Failed to write data, continuing to next record ${error}`);
+            console.error(`Failed to write data, continuing to next record ${error}`);
         }
     });
 };
 
 const writeDynamoDbItem = custHourlyUsageItem => {
-    const type = `hourly_${custHourlyUsageItem.customerId}`;
+    const type = `${HOURLY_CUST_ID_TYPE_PREFIX}${custHourlyUsageItem.customerId}`;
     const interval = custHourlyUsageItem.interval.toString();
     const totalUsage = custHourlyUsageItem.totalUsage.toString();
     const costs = custHourlyUsageItem.costs.toString();
-    console.log(type, interval, totalUsage, costs);
+    console.debug(type, interval, totalUsage, costs);
     const params = {
         Item: {
             Type: {
@@ -118,15 +128,20 @@ const writeDynamoDbItem = custHourlyUsageItem => {
                 N: costs
             }
         },
-        TableName: 'enpoweredCae'
+        TableName: CONFIG.DDB_TABLE_NAME
     };
-    // TODO pass tablename as env var
 
-    dynamoDb.putItem(params).promise()
+    // TODO implement mocking framework and remove testFlag
+    if (CONFIG.TESTING) {
+        console.log('Test mode enabled, not writing to DynamoDB')
+        return;
+    }
+
+    dynamoDbClient.putItem(params).promise()
         .then(result => {
-            console.log(`Successfuly wrote item ${JSON.stringify(params.Item)}`);
+            console.log(`Successfully wrote item ${JSON.stringify(params.Item)}`);
         }).catch(error => {
-            console.log(`Failed to write item ${JSON.stringify(params.Item)} Error:${error}`);
+            console.error(`Failed to write item ${JSON.stringify(params.Item)} Error:${error}`);
         });
     // TODO write items as a batch
 }

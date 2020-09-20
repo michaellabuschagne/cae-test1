@@ -13,7 +13,7 @@
     "lambda:genEnerg": "echo GenerateEnergyDataLambdaS3Key\\=$(npm run binary --prefix ./lambdas/generateFakeEnergyPricing)",
     "lambda:custBill": "echo QueryCustomerBillLambdaS3Key\\=$(npm run binary --prefix ./lambdas/customerBillApi)",
     "lambda:ddbStreams": "echo DynamoDbStreamHandlerLambdaS3Key\\=$(npm run binary --prefix ./lambdas/dynamoDbStreamHandler)",
-    "cfn:param-overrides": "echo \"$(npm run --silent lambda:genCust) $(npm run --silent lambda:genEnerg)\"",
+    "cfn:param-overrides": "echo \"$(npm run --silent lambda:genCust) $(npm run --silent lambda:genEnerg) $(npm run --silent lambda:custBill) $(npm run --silent lambda:ddbStreams)\"",
     "cfn:pkg": "mkdir -p build && aws cloudformation package  --template-file ./src/cae-test1.cf.json --output-template build/cae-test1.yaml --s3-bucket cae-test1-deployment-artifacts",
     "cfn:dep": "aws cloudformation deploy --stack-name cae-test1 --parameter-overrides $(npm run --silent cfn:param-overrides) --template-file ./build/cae-test1.yaml --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM",
     "cfn:out": "aws cloudformation describe-stacks --stack-name cae-test1",

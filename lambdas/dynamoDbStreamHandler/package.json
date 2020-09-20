@@ -1,6 +1,6 @@
 {
   "name": "dynamodbstreamhandler",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
   "main": "handler.js",
   "scripts": {
@@ -9,9 +9,11 @@
     "clean": "rimraf dist *.zip",
     "copy": "babel src package.json package-lock.json --out-dir dist --copy-files",
     "prod": "cross-env NODE_ENV=production npm install --prefix dist",
-    "zip": "zip -rXFS9 dynamoDbStreamHandler-v6.zip dist",
-    "build": "npm run test && npm run clean && npm run copy && npm run prod && npm run zip",
-    "s3upload": "aws s3 cp dynamoDbStreamHandler-v6.zip s3://cae-test1-deployment-artifacts-eu-west-1"
+    "ver": "node -p 'require(\"./package.json\").version'",
+    "binary": "echo dynamoDbStreamHandler-v$(npm run --silent ver).zip",
+    "zip": "zip -rXFS9 $(npm run --silent binary) dist",
+    "build": "npm run test && npm run clean && npm run copy && npm run prod && npm version patch && npm run zip",
+    "s3upload": "aws s3 cp $(npm run --silent binary) s3://cae-test1-deployment-artifacts-eu-west-1"
   },
   "keywords": [],
   "author": "",

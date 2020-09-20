@@ -12,6 +12,8 @@ const CONFIG = {
     CUSTOMER_ROWS: Number(process.env.CUSTOMER_ROWS || 1)
 };
 
+const CUST_ID_TYPE_PREFIX = 'customer_';
+
 exports.generateFakeCustomerData = function generateFakeCustomerData() {
     console.log('CONFIG', CONFIG);
     const epoch = generateEpoch();
@@ -27,7 +29,7 @@ const writeItems = (customerUsageArray) => {
 };
 
 const writeDynamoDbItem = customerUsage => {
-    const type = `customer_${customerUsage.customerId}`;
+    const type = `${CUST_ID_TYPE_PREFIX}${customerUsage.customerId}`;
     const interval = new Date(customerUsage.intervalStart).getTime().toString();
     const usage = customerUsage.usage.toString();
     console.debug(type, interval, usage);

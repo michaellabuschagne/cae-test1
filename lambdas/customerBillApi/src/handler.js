@@ -1,14 +1,24 @@
-const AWS = require('aws-sdk');
+'use strict';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const AWS = require('aws-sdk');
+AWS.config.region = process.env.AWS_REGION;
+console.debug('AWS Region:', AWS.config.region);
+// TODO implement logging framework
+const dynamodbClient = new AWS.DynamoDB.DocumentClient();
+
+const CONFIG = {
+    TESTING: process.env.TESTING || false,
+    DDB_TABLE_NAME: process.env.DDB_TABLE_NAME || 'enpoweredCae'
+};
 
 const HOURLY_CUST_ID_TYPE_PREFIX = 'hourly_customer_';
+const MINUTES_59_SECONDS = 3540;
 
 exports.queryCustomerBill = (event, context, callback) => {
     console.log(JSON.stringify(event));
 
     // TODO validate query params "event.queryStringParameters.customerid"
-    console.log(event.queryStringParameters);
+    console.debug(event.queryStringParameters);
     const { customerid, start, end } = event.queryStringParameters;
     const customerIdNoLeading = parseInt(customerid);
     const type = `${HOURLY_CUST_ID_TYPE_PREFIX}${customerIdNoLeading}`;
@@ -20,7 +30,7 @@ exports.queryCustomerBill = (event, context, callback) => {
             return {
                 customerId: customerIdNoLeading,
                 intervalStart: epochToIsoDateString(item.Interval),
-                intervalEnd: epochToIsoDateString(item.Interval + 3540),
+                intervalEnd: epochToIsoDateString(item.Interval + MINUTES_59_SECONDS),
                 totalUsage: item.TotalUsage,
                 costs: item.Costs
             };
@@ -55,9 +65,16 @@ const queryCustomerBill = (type, epochIntervalStart, epochIntervalEnd) => {
             ':startInterval': epochIntervalStart,
             ':endInterval': epochIntervalEnd
         },
-        TableName: 'enpoweredCae'
+        TableName: CONFIG.DDB_TABLE_NAME
     };
-    return dynamodb.query(params).promise();
+
+    // TODO implement mocking framework and remove testFlag
+    if (CONFIG.TESTING) {
+        console.log('Test mode enabled, not querying DynamoDB');
+        return new Promise((resolve, reject) => resolve({Items:[]}));
+    }
+
+    return dynamodbClient.query(params).promise();
 }
 
 const errorResponse = (errorMessage, awsRequestId, callback) => {
