@@ -1,6 +1,7 @@
 {
   "name": "generatefakeenergypricing",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "description": "Generate fake energy pricing data and write it to DynamoDB",
   "main": "handler.js",
   "scripts": {
     "start": "node -e 'require(\"./src/handler.js\").generateFakeEnergyData()'",
@@ -8,9 +9,11 @@
     "clean": "rimraf dist *.zip",
     "copy": "babel src package.json package-lock.json --out-dir dist --copy-files",
     "prod": "cross-env NODE_ENV=production npm install --prefix dist",
-    "zip": "zip -rXFS9 generateFakeEnergyPricing-v3.zip dist",
-    "build": "npm run test && npm run clean && npm run copy && npm run prod && npm run zip",
-    "s3upload": "aws s3 cp generateFakeEnergyPricing-v3.zip s3://cae-test1-deployment-artifacts-eu-west-1"
+    "ver": "node -p 'require(\"./package.json\").version'",
+    "binary": "echo generateFakeEnergyPricing-v$(npm run --silent ver).zip",
+    "zip": "zip -rXFS9 $(npm run --silent binary) dist",
+    "build": "npm run test && npm run clean && npm run copy && npm run prod && npm version patch && npm run zip",
+    "s3upload": "aws s3 cp $(npm run --silent binary) s3://cae-test1-deployment-artifacts-eu-west-1"
   },
   "keywords": [],
   "author": "",
@@ -20,11 +23,9 @@
     "@babel/core": "^7.11.6",
     "aws-sdk": "^2.755.0",
     "cross-env": "^7.0.2",
-    "nodemon": "^2.0.4",
     "rimraf": "^3.0.2"
   },
   "dependencies": {
     "@babel/runtime-corejs3": "^7.11.2"
-  },
-  "description": ""
+  }
 }

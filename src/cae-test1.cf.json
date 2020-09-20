@@ -295,7 +295,15 @@
           ]
         },
         "Runtime": "nodejs12.x",
-        "Timeout": 3
+        "Timeout": 3,
+        "Environment": {
+          "Variables" : {
+            "DDB_TABLE_NAME" : {
+              "Ref": "DynamoDBTableName"
+            }
+          }
+        }
+
       }
     },
     "generateCustomerDataCron": {

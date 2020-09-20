@@ -1,15 +1,20 @@
 'use strict';
 
-const aws = require('aws-sdk'); // TODO only import DynamoDB
+const AWS = require('aws-sdk');
+AWS.config.region = process.env.AWS_REGION;
+// TODO implement logging framework
+const dynamoDbClient = new AWS.DynamoDB();
 
-aws.config.region = 'eu-west-1'; // TODO switch to environment variable
-
-const dynamoDbClient = new aws.DynamoDB();
+const CONFIG = {
+    TESTING: process.env.TESTING || false,
+    DDB_TABLE_NAME: process.env.DDB_TABLE_NAME || 'enpoweredCae'
+};
 
 exports.generateFakeEnergyData = function generateFakeEnergyData() {
+    console.log('CONFIG', CONFIG);
     const epoch = generateEpoch();
     const energyData = generateEnergyRecord(epoch);
-    console.log('Writing energy data record' + JSON.stringify(energyData));
+    console.debug('Writing energy data record' + JSON.stringify(energyData));
     writeItems([energyData]);
 }
 
@@ -37,13 +42,18 @@ const writeDynamoDbItem = energyPriceInterval => {
                 N: price
             }
         },
-        TableName: 'enpoweredCae'
+        TableName: CONFIG.DDB_TABLE_NAME
     };
-    // TODO pass tablename as env var
+
+    // TODO implement mocking framework and remove testFlag
+    if (CONFIG.TESTING) {
+        console.log('Test mode enabled, not writing to DynamoDB')
+        return;
+    }
     
     dynamoDbClient.putItem(params).promise()
         .then(result => {
-            console.log(`Successfuly wrote item ${JSON.stringify(result)}`);
+            console.log(`Successfuly wrote item ${JSON.stringify(params)}`);
         }).catch(error => {
             console.log(`Failed to write item ${error}`);
         });

@@ -19,4 +19,4 @@
 
 # Potential improvements
 ## Hourly interval costs reliance on energy pricing
-- If energu 
+- Need to provide a mechanism (SQS or similar) to hold customer usage data that was unable to computed due to missing energy pricing for a given interval

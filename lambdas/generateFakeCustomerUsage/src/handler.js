@@ -3,10 +3,9 @@
 const AWS = require('aws-sdk');
 AWS.config.region = process.env.AWS_REGION;
 console.debug('AWS Region:', AWS.config.region);
-
 // TODO implement logging framework
+const dynamoDbClient = new AWS.DynamoDB();
 
-const dynamoDb = new AWS.DynamoDB();
 const CONFIG = {
     TESTING: process.env.TESTING || false,
     DDB_TABLE_NAME: process.env.DDB_TABLE_NAME || 'enpoweredCae',
@@ -53,7 +52,8 @@ const writeDynamoDbItem = customerUsage => {
         return;
     }
 
-    dynamoDb.putItem(params).promise()
+    // TODO implement batch writer
+    dynamoDbClient.putItem(params).promise()
         .then(result => {
             console.debug(`Successfully wrote item ${JSON.stringify(params)}`);
         }).catch(error => {
