@@ -14,7 +14,7 @@ const CONFIG = {
 const CUST_ID_TYPE_PREFIX = 'customer';
 const ENERGY_PRICE_TYPE_PREFIX = 'energy_price';
 const DDB_INSERT_EVENT_NAME = 'INSERT';
-const HOURLY_CUST_ID_TYPE_PREFIX = 'hourly_customer_';
+const HOURLY_CUST_ID_TYPE_PREFIX = 'hourly_';
 
 
 exports.rollUpCustomerUsageData = function rollUpCustomerUsageData(event) {

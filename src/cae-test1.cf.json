@@ -8,7 +8,7 @@
     },
     "DynamoDBTableName": {
       "Type": "String",
-      "Default": "enpoweredCae",
+      "Default": "cae-test1",
       "Description": "The DynamoDB Table which the application will use"
     },
     "DDBReadCapacityUnits": {

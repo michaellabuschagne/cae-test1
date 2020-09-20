@@ -16,7 +16,7 @@ const MINUTES_59_SECONDS = 3540;
 
 exports.queryCustomerBill = (event, context, callback) => {
     console.log(JSON.stringify(event));
-
+    console.log('CONFIG', CONFIG);
     // TODO validate query params "event.queryStringParameters.customerid"
     console.debug(event.queryStringParameters);
     const { customerid, start, end } = event.queryStringParameters;
