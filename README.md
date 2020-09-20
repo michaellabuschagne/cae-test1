@@ -1,18 +1,15 @@
 # CAE EnPowered
 
+## Requirements
+In order to successfully launch this CloudFormation template there are a few prerequisites listed below.
+### Configure the S3 bucket name
+This stack will upload its Lambda artifacts to the provided S3 bucket.
+Ensure you pass the bucket name when running the ``deploy`` script. E.g. ``npm run deploy --s3bucket=cae-test1-deployment-artifacts``.
 
-Hey there!
+***NOTE***: Ensure you are utilising AWS credentials which have read\write permissions to this bucket.
+### MacOS
+This has only been tested on MacOS and as such users utilising Windows or *nix operating systems may encounter issue.
 
-Thank you so much for taking the time to check this out — we appreciate your
-time.
-
-We'd like you to show us a bit of what you can do by completing a short
-exercise. It's nothing major, and should not take you long, but we'd like to give
-you room to blow us away. We require that you make a submission within a
-specific time frame, whilst leaving you room to improve on the first
-submission over an extended period. Just to be clear, you do not have to spend
-too much time on it. We just want you to deliver simple, clean and, idomatic code
-in a well organized form.
 
 ## How to do the exercise
 

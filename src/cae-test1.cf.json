@@ -1,9 +1,9 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
   "Parameters": {
-    "ArtifactsS3BucketPrefix": {
+    "ArtifactsS3BucketName": {
       "Type": "String",
-      "Default": "cae-test1-deployment-artifacts-",
+      "Default": "cae-test1-deployment-artifacts",
       "Description": "The S3 bucket used to store the Lambda function binaries"
     },
     "DynamoDBTableName": {
@@ -57,7 +57,7 @@
     "ArtifactsS3Bucket": {
       "Description": "Lambda artifact store for this stack",
       "Value": {
-        "Ref": "lambdaArtifactsS3Bucket"
+        "Ref": "ArtifactsS3BucketName"
       }
     },
     "APIGatewayEndpoint": {
@@ -174,21 +174,7 @@
                   ]
                 },
                 "arn:aws:cloudwatch:*:*:*",
-                "arn:aws:logs:*:*:*",
-                {
-                  "Fn::Join": [
-                    "",
-                    [
-                      {
-                        "Fn::GetAtt": [
-                          "lambdaArtifactsS3Bucket",
-                          "Arn"
-                        ]
-                      },
-                      "/*"
-                    ]
-                  ]
-                }
+                "arn:aws:logs:*:*:*"
               ]
             }
           ]
@@ -201,49 +187,12 @@
         ]
       }
     },
-    "lambdaArtifactsS3Bucket": {
-      "Type": "AWS::S3::Bucket",
-      "Properties": {
-        "AccessControl": "Private",
-        "BucketName": {
-          "Fn::Join": [
-            "",
-            [
-              {
-                "Ref": "ArtifactsS3BucketPrefix"
-              },
-              {
-                "Ref": "AWS::Region"
-              }
-            ]
-          ]
-        },
-        "LifecycleConfiguration": {
-          "Rules": [
-            {
-              "Id": "Expire artifacts after 14 days",
-              "Status": "Enabled",
-              "ExpirationInDays": 14
-            }
-          ]
-        },
-        "PublicAccessBlockConfiguration": {
-          "BlockPublicAcls": true,
-          "BlockPublicPolicy": true,
-          "IgnorePublicAcls": true,
-          "RestrictPublicBuckets": true
-        },
-        "VersioningConfiguration": {
-          "Status": "Enabled"
-        }
-      }
-    },
     "generateCustomerDataLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "lambdaArtifactsS3Bucket"
+            "Ref": "ArtifactsS3BucketName"
           },
           "S3Key": {
             "Ref": "GenerateFakeCustomerUsageLambdaS3Key"
@@ -278,7 +227,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "lambdaArtifactsS3Bucket"
+            "Ref": "ArtifactsS3BucketName"
           },
           "S3Key": {
             "Ref": "GenerateEnergyDataLambdaS3Key"
@@ -403,7 +352,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "lambdaArtifactsS3Bucket"
+            "Ref": "ArtifactsS3BucketName"
           },
           "S3Key": {
             "Ref": "DynamoDbStreamHandlerLambdaS3Key"
@@ -513,7 +462,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": {
-            "Ref": "lambdaArtifactsS3Bucket"
+            "Ref": "ArtifactsS3BucketName"
           },
           "S3Key": {
             "Ref": "QueryCustomerBillLambdaS3Key"
