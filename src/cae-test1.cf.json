@@ -29,17 +29,17 @@
     "GenerateEnergyDataLambdaS3Key": {
       "Type": "String",
       "Default": "generateFakeEnergyPricing-v3.zip",
-      "Description": "The name of the generateFakeCustomerUsage binary"
+      "Description": "The name of the generateFakeEnergyPricing binary"
     },
     "DynamoDbStreamHandlerLambdaS3Key": {
       "Type": "String",
       "Default": "dynamoDbStreamHandler-v6.zip",
-      "Description": "The name of the generateFakeCustomerUsage binary"
+      "Description": "The name of the dynamoDbStreamHandler binary"
     },
     "QueryCustomerBillLambdaS3Key": {
       "Type": "String",
       "Default": "customerBillApi-v5.zip",
-      "Description": "The name of the generateFakeCustomerUsage binary"
+      "Description": "The name of the customerBillApi binary"
     }
   },
   "Outputs": {
@@ -54,6 +54,10 @@
       "Value": {
         "Ref": "lambdaArtifactsS3Bucket"
       }
+    },
+    "APIGatewayEndpoint": {
+      "Description": "The HTTP endpoint for the Customer Bill API",
+      "Value": { "Fn::Sub" : "https://${queryCustomerBillApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${customerBillApiGatewayStage}/" }
     }
   },
   "Resources": {
