@@ -586,7 +586,7 @@
             {
               "StatusCode": 200
             }
-          ],
+          ]
         },
         "RequestParameters": {
           "method.request.querystring.customerid": true,
@@ -603,7 +603,21 @@
           {
             "StatusCode": 200
           }
-        ]
+        ],
+        "RequestValidatorId" : {
+          "Ref": "queryCustomerBillRequestValidator"
+        }
+      }
+    },
+    "queryCustomerBillRequestValidator": {
+      "Type": "AWS::ApiGateway::RequestValidator",
+      "Properties": {
+        "Name": "GetCustomerBillValidator",
+        "RestApiId": {
+          "Ref": "queryCustomerBillApiGateway"
+        },
+        "ValidateRequestBody": true,
+        "ValidateRequestParameters": true
       }
     }
   }
