@@ -1,16 +1,23 @@
 'use strict';
 
-const AWS = require('aws-sdk'); // TODO only import DynamoDB
-
-AWS.config.region = 'eu-west-1'; // TODO switch to environment variable
+const AWS = require('aws-sdk');
+AWS.config.region = process.env.AWS_REGION;
 console.debug('AWS Region:', AWS.config.region);
 
+// TODO implement logging framework
+
 const dynamoDb = new AWS.DynamoDB();
+const CONFIG = {
+    TESTING: process.env.TESTING || false,
+    DDB_TABLE_NAME: process.env.DDB_TABLE_NAME || 'enpoweredCae',
+    CUSTOMER_ROWS: Number(process.env.CUSTOMER_ROWS || 1)
+};
 
 exports.generateFakeCustomerData = function generateFakeCustomerData() {
+    console.log('CONFIG', CONFIG);
     const epoch = generateEpoch();
     const customerUsageData = generateItems(epoch);
-    console.log('Writing ' + customerUsageData.length + ' records');
+    console.debug('Writing ' + customerUsageData.length + ' records');
     writeItems(customerUsageData);
 }
 
@@ -24,7 +31,7 @@ const writeDynamoDbItem = customerUsage => {
     const type = `customer_${customerUsage.customerId}`;
     const interval = new Date(customerUsage.intervalStart).getTime().toString();
     const usage = customerUsage.usage.toString();
-    console.log(type, interval, usage);
+    console.debug(type, interval, usage);
     const params = {
         Item: {
             Type: {
@@ -37,16 +44,21 @@ const writeDynamoDbItem = customerUsage => {
                 N: usage
             }
         },
-        TableName: 'enpoweredCae'
+        TableName: CONFIG.DDB_TABLE_NAME
     };
-    // TODO pass tablename as env var
+
+    // TODO implement mocking framework and remove testFlag
+    if (CONFIG.TESTING) {
+        console.log('Test mode enabled, not writing to DynamoDB')
+        return;
+    }
 
     dynamoDb.putItem(params).promise()
         .then(result => {
-            console.log(`Successfuly wrote item ${result}`);
+            console.debug(`Successfully wrote item ${JSON.stringify(params)}`);
         }).catch(error => {
-            console.log(`Failed to write item ${error}`);
-        });
+        console.error(`Failed to write item ${error}`);
+    });
 }
 
 const generateEpoch = () => {
@@ -60,7 +72,7 @@ const generateEpoch = () => {
 
 const generateItems = (epoch) => {
     const customerUsageData = [];
-    for (let i = 1; i <= 1000; i++) {
+    for (let i = 1; i <= CONFIG.CUSTOMER_ROWS; i++) {
         customerUsageData.push({
             customerId: i,
             intervalStart: epoch,

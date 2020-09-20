@@ -1,17 +1,19 @@
 {
   "name": "generatefakecustomerusage",
-  "version": "1.0.0",
+  "version": "1.0.6",
   "description": "",
   "main": "handler.js",
   "scripts": {
-    "start": "node -e 'require(\"./src/handler.js\").generateFakeCustomerData()'",
+    "start": "node -e 'require(\"./src/handler.js\").generateFakeCustomerData(true)'",
     "test": "npm run start",
     "clean": "rimraf dist *.zip",
     "copy": "babel src package.json package-lock.json --out-dir dist --copy-files",
     "prod": "cross-env NODE_ENV=production npm install --prefix dist",
-    "zip": "zip -rXFS9 generateFakeCustomerUsage-v8.zip dist",
-    "build": "npm run test && npm run clean && npm run copy && npm run prod && npm run zip",
-    "s3upload": "aws s3 cp generateFakeCustomerUsage-v8.zip s3://cae-test1-deployment-artifacts-eu-west-1"
+    "ver": "node -p 'require(\"./package.json\").version'",
+    "binary": "echo generateFakeCustomerUsage-v$(npm run --silent ver).zip",
+    "zip": "zip -rXFS9 $(npm run --silent binary) dist",
+    "build": "npm run test && npm run clean && npm run copy && npm run prod && npm version patch && npm run zip",
+    "s3upload": "aws s3 cp $(npm run --silent binary) s3://cae-test1-deployment-artifacts-eu-west-1"
   },
   "keywords": [],
   "author": "",

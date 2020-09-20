@@ -13,6 +13,9 @@
 ## Not storing the interval end times
 - Given that the interval end times can be inferred from the interval start times it may be better not store to save storage space.
 - Understandably there are tradeoffs with this decision as if the interval were to change in the future (e.g. from 5 minutes to 1 minute) the solution would need to be refactored to account for this. Ideally the tradeoffs would be thoroughly discussed and agreed upon based on and considering future roadmap items, business needs, and the likelihood of the interval changing.
+## API Gateway
+### Customer Bill API
+- Enable API cache for the get bill call to reduce RCUs to DynamoDB
 
 # Potential improvements
 ## Hourly interval costs reliance on energy pricing

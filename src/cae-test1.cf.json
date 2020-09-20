@@ -26,6 +26,11 @@
       "Default": "generateFakeCustomerUsage-v8.zip",
       "Description": "The name of the generateFakeCustomerUsage binary"
     },
+    "GFCULambdaEnvCustomerRows": {
+      "Type": "String",
+      "Default": "1000",
+      "Description": "Number of customers the Lambda should generate data for"
+    },
     "GenerateEnergyDataLambdaS3Key": {
       "Type": "String",
       "Default": "generateFakeEnergyPricing-v3.zip",
@@ -255,7 +260,17 @@
           ]
         },
         "Runtime": "nodejs12.x",
-        "Timeout": 30
+        "Timeout": 30,
+        "Environment": {
+          "Variables" : {
+            "DDB_TABLE_NAME" : {
+              "Ref": "DynamoDBTableName"
+            },
+            "CUSTOMER_ROWS" : {
+              "Ref": "GFCULambdaEnvCustomerRows"
+            }
+          }
+        }
       }
     },
     "generateEnergyDataLambda": {
