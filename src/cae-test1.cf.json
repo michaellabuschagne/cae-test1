@@ -62,7 +62,9 @@
     },
     "APIGatewayEndpoint": {
       "Description": "The HTTP endpoint for the Customer Bill API",
-      "Value": { "Fn::Sub" : "https://${queryCustomerBillApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${customerBillApiGatewayStage}/bill?customerid=005&start=2020-09-20T00:00:00Z&end=2020-12-31T07:00:00Z" }
+      "Value": {
+        "Fn::Sub": "https://${queryCustomerBillApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${customerBillApiGatewayStage}/bill?customerid=005&start=2020-09-20T00:00:00Z&end=2020-12-31T07:00:00Z"
+      }
     }
   },
   "Resources": {
@@ -211,11 +213,11 @@
         "Runtime": "nodejs12.x",
         "Timeout": 30,
         "Environment": {
-          "Variables" : {
-            "DDB_TABLE_NAME" : {
+          "Variables": {
+            "DDB_TABLE_NAME": {
               "Ref": "DynamoDBTableName"
             },
-            "CUSTOMER_ROWS" : {
+            "CUSTOMER_ROWS": {
               "Ref": "GFCULambdaEnvCustomerRows"
             }
           }
@@ -246,13 +248,12 @@
         "Runtime": "nodejs12.x",
         "Timeout": 3,
         "Environment": {
-          "Variables" : {
-            "DDB_TABLE_NAME" : {
+          "Variables": {
+            "DDB_TABLE_NAME": {
               "Ref": "DynamoDBTableName"
             }
           }
         }
-
       }
     },
     "generateCustomerDataCron": {
@@ -371,13 +372,12 @@
         "Runtime": "nodejs12.x",
         "Timeout": 30,
         "Environment": {
-          "Variables" : {
-            "DDB_TABLE_NAME" : {
+          "Variables": {
+            "DDB_TABLE_NAME": {
               "Ref": "DynamoDBTableName"
             }
           }
         }
-
       }
     },
     "dynamoDbStreamCustomerUsageTrigger": {
@@ -481,13 +481,12 @@
         "Runtime": "nodejs12.x",
         "Timeout": 60,
         "Environment": {
-          "Variables" : {
-            "DDB_TABLE_NAME" : {
+          "Variables": {
+            "DDB_TABLE_NAME": {
               "Ref": "DynamoDBTableName"
             }
           }
         }
-
       }
     },
     "queryCustomerBillApiGateway": {
@@ -593,7 +592,7 @@
       "Type": "AWS::ApiGateway::Stage",
       "Properties": {
         "DeploymentId": {
-          "Ref": "apiDeployment"
+          "Ref": "customerBillApiGatewayDeployment"
         },
         "MethodSettings": [
           {
@@ -609,10 +608,10 @@
         "StageName": "LATEST"
       }
     },
-    "apiDeployment": {
+    "customerBillApiGatewayDeployment": {
       "Type": "AWS::ApiGateway::Deployment",
       "DependsOn": [
-        "queryCustomerBillRequest"
+        "queryCustomerBillGetMethod"
       ],
       "Properties": {
         "RestApiId": {
@@ -621,7 +620,7 @@
         "StageName": "DummyStage"
       }
     },
-    "customerBillQueryResource": {
+    "customerBillResource": {
       "Type": "AWS::ApiGateway::Resource",
       "Properties": {
         "RestApiId": {
@@ -636,7 +635,7 @@
         "PathPart": "bill"
       }
     },
-    "queryCustomerBillRequest": {
+    "queryCustomerBillGetMethod": {
       "DependsOn": "queryCustomerBillApiGatewayLambdaPermission",
       "Type": "AWS::ApiGateway::Method",
       "Properties": {
@@ -675,19 +674,20 @@
           "method.request.querystring.start": true,
           "method.request.querystring.end": true
         },
-        "ResourceId": {
-          "Ref": "customerBillQueryResource"
-        },
-        "RestApiId": {
-          "Ref": "queryCustomerBillApiGateway"
-        },
         "MethodResponses": [
           {
             "StatusCode": 200
           }
         ],
+        "OperationName": "GetCustomerBill",
         "RequestValidatorId": {
           "Ref": "queryCustomerBillRequestValidator"
+        },
+        "ResourceId": {
+          "Ref": "customerBillResource"
+        },
+        "RestApiId": {
+          "Ref": "queryCustomerBillApiGateway"
         }
       }
     },
@@ -700,6 +700,236 @@
         },
         "ValidateRequestBody": true,
         "ValidateRequestParameters": true
+      }
+    },
+    "customerUsageDataIngestDeadLetterQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": "IotCustomerUsageDataDLQ",
+        "DelaySeconds": 0,
+        "KmsMasterKeyId": "alias/aws/sqs",
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "ReceiveMessageWaitTimeSeconds": 20,
+        "VisibilityTimeout": 0
+      }
+    },
+    "customerUsageDataIngestQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": "IotCustomerUsageData",
+        "DelaySeconds": 0,
+        "KmsMasterKeyId": "alias/aws/sqs",
+        "MaximumMessageSize": 262144,
+        "MessageRetentionPeriod": 1209600,
+        "ReceiveMessageWaitTimeSeconds": 20,
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "customerUsageDataIngestDeadLetterQueue",
+              "Arn"
+            ]
+          },
+          "maxReceiveCount": 3
+        },
+        "VisibilityTimeout": 0
+      }
+    },
+    "customerIngestSqsSendMessage": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sqs:SendMessage"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "customerUsageDataIngestQueue",
+                    "Arn"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "PolicyName": "CustomerIngestSqsSendMessagePolicy",
+        "Roles": [
+          "CustomerIngestSqsSendMessageRole"
+        ]
+      }
+    },
+    "customerIngestSqsSendMessageRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "CustomerIngestSqsSendMessageRole",
+        "Description": "Role to allow API gateway Customer Usage Ingest API to send messages to Customer Usage Data Ingest SQS",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "apigateway.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "customerUsageApiGateway": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "CustomerUsage",
+        "Description": "Customer usage data ingest API",
+        "FailOnWarnings": true
+      }
+    },
+    "customerUsageApiGatewayDeployment": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "DependsOn": [
+        "customerUsagePostMethod"
+      ],
+      "Properties": {
+        "RestApiId": {
+          "Ref": "customerUsageApiGateway"
+        },
+        "StageName": "DummyStage"
+      }
+    },
+    "customerUsageIngestApiGatewayStage": {
+      "DependsOn": [
+        "apiGatewayAccount"
+      ],
+      "Type": "AWS::ApiGateway::Stage",
+      "Properties": {
+        "DeploymentId": {
+          "Ref": "customerUsageApiGatewayDeployment"
+        },
+        "MethodSettings": [
+          {
+            "DataTraceEnabled": true,
+            "HttpMethod": "*",
+            "LoggingLevel": "INFO",
+            "ResourcePath": "/*"
+          }
+        ],
+        "RestApiId": {
+          "Ref": "customerUsageApiGateway"
+        },
+        "StageName": "LATEST"
+      }
+    },
+    "customerUsageResource": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "customerUsageApiGateway"
+        },
+        "ParentId": {
+          "Fn::GetAtt": [
+            "customerUsageApiGateway",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "usage"
+      }
+    },
+    "model": {
+      "Type": "AWS::ApiGateway::Model",
+      "Properties": {
+        "Name": "CustomerUsage",
+        "Description": "Customer Usage Data Ingest Schema",
+        "RestApiId": {
+          "Ref": "customerUsageApiGateway"
+        },
+        "ContentType": "application/json",
+        "Schema": {}
+      }
+    },
+    "customerUsagePostMethod": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "POST",
+        "Integration": {
+          "Credentials": {
+            "Fn::GetAtt": [
+              "customerIngestSqsSendMessageRole",
+              "Arn"
+            ]
+          },
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": [
+            {
+              "StatusCode": 200
+            }
+          ],
+          "PassthroughBehavior": "NEVER",
+          "RequestParameters": {
+            "integration.request.header.Content-Type": "\\'application/x-www-form-urlencoded\\'"
+          },
+          "RequestTemplates": {
+            "application/json": "Action=SendMessage&MessageBody=$input.body"
+          },
+          "Type": "AWS",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:aws:apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":sqs:path/",
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                "/",
+                {
+                  "Fn::GetAtt": [
+                    "customerUsageDataIngestQueue",
+                    "QueueName"
+                  ]
+                }
+              ]
+            ]
+          }
+        },
+        "MethodResponses": [
+          {
+            "StatusCode": 200
+          }
+        ],
+        "OperationName": "SendCustomerUsage",
+        "RequestValidatorId": {
+          "Ref": "customerUsagePostRequestValidator"
+        },
+        "ResourceId": {
+          "Ref": "customerUsageResource"
+        },
+        "RestApiId": {
+          "Ref": "customerUsageApiGateway"
+        }
+      }
+    },
+    "customerUsagePostRequestValidator": {
+      "Type": "AWS::ApiGateway::RequestValidator",
+      "Properties": {
+        "Name": "PostCustomerUsageValidator",
+        "RestApiId": {
+          "Ref": "customerUsageApiGateway"
+        },
+        "ValidateRequestBody": true
       }
     }
   }

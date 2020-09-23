@@ -17,7 +17,7 @@
     "cfn:param-overrides": "echo \"$(npm run --silent lambda:genCust) $(npm run --silent lambda:genEnerg) $(npm run --silent lambda:custBill) $(npm run --silent lambda:ddbStreams) $(npm run --silent s3bucket:artifacts)\"",
     "cfn:pkg": "mkdir -p build && aws cloudformation package  --template-file ./src/cae-test1.cf.json --output-template build/cae-test1.yaml --s3-bucket cae-test1-deployment-artifacts",
     "cfn:dep": "aws cloudformation deploy --region \"$npm_config_region\" --stack-name cae-test1 --parameter-overrides $(npm run --silent cfn:param-overrides) --template-file ./build/cae-test1.yaml --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM",
-    "cfn:out": "aws cloudformation describe-stacks --stack-name cae-test1",
+    "cfn:out": "aws cloudformation describe-stacks --stack-name cae-test1 --region \"$npm_config_region\"",
     "cfn:pkg:dep": "npm run cfn:pkg && npm run cfn:dep && npm run cfn:out",
     "deploy": "npm run build:lambda && npm run s3upload:lambda && npm run cfn:pkg:dep"
 
