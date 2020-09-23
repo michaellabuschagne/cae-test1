@@ -4,9 +4,9 @@
   "description": "Hey there!",
   "main": "index.js",
   "scripts": {
-    "test:lambda": "mono exec 'npm run test'",
     "mono": "mono",
     "install": "npm run mono bootstrap",
+    "test:lambda": "mono exec 'npm run test'",
     "build:lambda": "mono exec 'npm run build'",
     "s3upload:lambda": "mono exec 'npm run --silent s3upload'",
     "lambda:genCust": "echo GenerateFakeCustomerUsageLambdaS3Key\\=$(npm run binary --prefix ./lambdas/generateFakeCustomerUsage)",
@@ -16,10 +16,11 @@
     "s3bucket:artifacts": "echo ArtifactsS3BucketName\\=$npm_config_s3bucket",
     "cfn:param-overrides": "echo \"$(npm run --silent lambda:genCust) $(npm run --silent lambda:genEnerg) $(npm run --silent lambda:custBill) $(npm run --silent lambda:ddbStreams) $(npm run --silent s3bucket:artifacts)\"",
     "cfn:pkg": "mkdir -p build && aws cloudformation package  --template-file ./src/cae-test1.cf.json --output-template build/cae-test1.yaml --s3-bucket cae-test1-deployment-artifacts",
-    "cfn:dep": "aws cloudformation deploy --stack-name cae-test1 --parameter-overrides $(npm run --silent cfn:param-overrides) --template-file ./build/cae-test1.yaml --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM",
+    "cfn:dep": "aws cloudformation deploy --region \"$npm_config_region\" --stack-name cae-test1 --parameter-overrides $(npm run --silent cfn:param-overrides) --template-file ./build/cae-test1.yaml --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND CAPABILITY_NAMED_IAM",
     "cfn:out": "aws cloudformation describe-stacks --stack-name cae-test1",
     "cfn:pkg:dep": "npm run cfn:pkg && npm run cfn:dep && npm run cfn:out",
     "deploy": "npm run build:lambda && npm run s3upload:lambda && npm run cfn:pkg:dep"
+
   },
   "repository": {
     "type": "git",

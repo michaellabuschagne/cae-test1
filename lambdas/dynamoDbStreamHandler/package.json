@@ -1,6 +1,6 @@
 {
   "name": "dynamodbstreamhandler",
-  "version": "1.0.8",
+  "version": "1.0.17",
   "description": "",
   "main": "handler.js",
   "scripts": {
@@ -13,7 +13,7 @@
     "binary": "echo dynamoDbStreamHandler-v$(npm run --silent ver).zip",
     "zip": "zip -rXFS9 $(npm run --silent binary) dist",
     "build": "npm run test && npm run clean && npm run copy && npm run prod && npm version patch && npm run zip",
-    "s3upload": "aws s3 cp $(npm run --silent binary) s3://\"$npm_config_s3bucket\""
+    "s3upload": "aws s3 cp $(npm run --silent binary) s3://\"$npm_config_s3bucket\" --region \"$npm_config_region\""
   },
   "keywords": [],
   "author": "",

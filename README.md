@@ -3,8 +3,7 @@
 ## Quick start
 1. Create an S3 bucket in the region you will be launching your CloudFormation stack.
 2. Run ``npm install`` from the project root to install all dependencies and sub dependencies.
-3. Ensure your region is correctly set in your AWS credentials, or your deployment may fail with the error message ``"The <REGION> location constraint is incompatible for the region specific endpoint this request was sent to."`` 
-3. Run ``npm run deploy --s3bucket=<S3_BUCKET_NAME>`` and replace ``<S3_BUCKET_NAME>`` with the S3bucket you created in step 1.
+3. Run ``npm run deploy --s3bucket=<S3_BUCKET_NAME> --region=<AWS_REGION>`` and replace ``<S3_BUCKET_NAME>`` with the S3bucket you created in step 1 and replace ``<AWS_REGION>`` with the AWS region you would like the stack created in.
 4. Monitor the CloudFormation stack creation, it shouldn't take longer than 5 minutes to complete.
 5. Once the stack is up take note of the CloudFormation stack JSON output which contains the API Gateway endpoint in the field ``APIGatewayEndpoint``.
 6. After around 5 - 10 minutes there should be data in the DynamoDB table, and the API endpoint should be returning data.

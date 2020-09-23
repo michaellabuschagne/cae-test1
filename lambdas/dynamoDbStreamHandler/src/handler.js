@@ -3,7 +3,7 @@
 const AWS = require('aws-sdk');
 AWS.config.region = process.env.AWS_REGION;
 console.debug('AWS Region:', AWS.config.region);
-// TODO implement logging framework
+// TODO implement logging framework -- https://www.npmjs.com/package/lambda-log
 const dynamoDbClient = new AWS.DynamoDB();
 
 const CONFIG = {
@@ -131,7 +131,7 @@ const writeDynamoDbItem = custHourlyUsageItem => {
         TableName: CONFIG.DDB_TABLE_NAME
     };
 
-    // TODO implement mocking framework and remove testFlag
+    // TODO implement mocking framework and remove testFlag -- https://mochajs.org/
     if (CONFIG.TESTING) {
         console.log('Test mode enabled, not writing to DynamoDB')
         return;
