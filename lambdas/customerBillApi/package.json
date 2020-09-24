@@ -1,6 +1,6 @@
 {
   "name": "customerbillapi",
-  "version": "1.0.22",
+  "version": "1.0.25",
   "description": "Receives customer bill get requests and responds with DynamoDB query results",
   "main": "handler.js",
   "scripts": {

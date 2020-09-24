@@ -1,6 +1,6 @@
 {
   "name": "generatefakeenergypricing",
-  "version": "1.0.21",
+  "version": "1.0.24",
   "description": "Generate fake energy pricing data and write it to DynamoDB",
   "main": "handler.js",
   "scripts": {

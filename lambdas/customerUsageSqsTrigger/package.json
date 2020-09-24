@@ -1,6 +1,6 @@
 {
   "name": "customerusagesqstrigger",
-  "version": "1.0.5",
+  "version": "1.0.10",
   "description": "Triggered when customer usage is added to SQS queue",
   "main": "handler.js",
   "scripts": {

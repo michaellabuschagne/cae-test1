@@ -1,75 +1,59 @@
 'use strict';
 
-const AWS = require('aws-sdk');
-AWS.config.region = process.env.AWS_REGION;
-console.debug('AWS Region:', AWS.config.region);
 // TODO implement logging framework
-const dynamoDbClient = new AWS.DynamoDB();
+
+const axios = require('axios');
 
 const CONFIG = {
     TESTING: process.env.TESTING || false,
-    DDB_TABLE_NAME: process.env.DDB_TABLE_NAME || 'enpoweredCae',
-    CUSTOMER_ROWS: Number(process.env.CUSTOMER_ROWS || 1)
+    CUSTOMER_ROWS: Number(process.env.CUSTOMER_ROWS || 1),
+    CUSTOMER_USAGE_URL: process.env.CUSTOMER_USAGE_URL
 };
-
-const CUST_ID_TYPE_PREFIX = 'customer_';
 
 exports.generateFakeCustomerData = function generateFakeCustomerData() {
     console.log('CONFIG', CONFIG);
     const epoch = generateEpoch();
     const customerUsageData = generateItems(epoch);
     console.debug('Writing ' + customerUsageData.length + ' records');
-    writeItems(customerUsageData);
+    sendItemsToCustomerUsageApi(customerUsageData);
 }
 
-const writeItems = (customerUsageArray) => {
+const sendItemsToCustomerUsageApi = (customerUsageArray) => {
+    // TODO implement mocking framework and remove testFlag
+    if (CONFIG.TESTING) {
+        console.log(JSON.stringify(customerUsageArray));
+        console.log('Test mode enabled, not calling API gateway')
+        return;
+    }
     customerUsageArray.forEach(usage => {
-        writeDynamoDbItem(usage);
+        sendItemToCustomerUsageApi(usage);
     });
 };
 
-const writeDynamoDbItem = customerUsage => {
-    const type = `${CUST_ID_TYPE_PREFIX}${customerUsage.customerId}`;
-    const interval = new Date(customerUsage.intervalStart).getTime().toString();
-    const usage = customerUsage.usage.toString();
-    console.debug(type, interval, usage);
-    const params = {
-        Item: {
-            Type: {
-                S: type
-            },
-            Interval: {
-                N: interval
-            },
-            Usage: {
-                N: usage
-            }
-        },
-        TableName: CONFIG.DDB_TABLE_NAME
-    };
+const sendItemToCustomerUsageApi = customerUsage => {
 
-    // TODO implement mocking framework and remove testFlag
-    if (CONFIG.TESTING) {
-        console.log('Test mode enabled, not writing to DynamoDB')
-        return;
-    }
-
-    // TODO implement batch writer
-    dynamoDbClient.putItem(params).promise()
-        .then(result => {
-            console.debug(`Successfully wrote item ${JSON.stringify(params)}`);
+    axios.post(CONFIG.CUSTOMER_USAGE_URL, customerUsage)
+        .then(res => {
+            // console.trace(`statusCode: ${res.statusCode}`)
+            // TODO implement logging framework to better control logging level
         }).catch(error => {
-        console.error(`Failed to write item ${error}`);
-    });
+            console.error('API call failed', error);
+        });
 }
 
 const generateEpoch = () => {
     const currentDate = new Date();
-    currentDate.setSeconds(0);
-    currentDate.setMilliseconds(0);
-    const epoch = currentDate.getTime()/1000;
-    console.log(epoch);
-    return epoch;
+    currentDate.setUTCSeconds(0);
+    currentDate.setUTCMilliseconds(0);
+    // Round the minute to the nearest 5 minutes to ensure intervals match energy price intervals
+    currentDate.setUTCMinutes(Math.ceil(currentDate.getUTCMinutes()/5)*5);
+    return currentDate.getTime()/1000;
+}
+
+const generateStringDateFromEpoch = (epoch) => {
+    const date = new Date(epoch*1000);
+    //console.trace(epoch, date.toISOString());
+    return date.toISOString();
 }
 
 const generateItems = (epoch) => {
@@ -77,8 +61,8 @@ const generateItems = (epoch) => {
     for (let i = 1; i <= CONFIG.CUSTOMER_ROWS; i++) {
         customerUsageData.push({
             customerId: i,
-            intervalStart: epoch,
-            intervalEnd: epoch + (5*60*1000),
+            intervalStart: generateStringDateFromEpoch(epoch),
+            intervalEnd: generateStringDateFromEpoch(epoch + (5*60)),
             usage: Math.floor(Math.random() * 1000)
         });
         // This is the format in which data will be received by remote clients

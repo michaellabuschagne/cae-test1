@@ -20,6 +20,7 @@ exports.handleCustomerUsageDataIngest = function handleCustomerUsageDataIngest(e
 }
 
 function valid(message) {
+    // TODO do some actual validation
     return true;
 }
 
@@ -43,7 +44,7 @@ const writeDynamoDbItem = customerUsage => {
     const type = `${CUST_ID_TYPE_PREFIX}${customerUsage.customerId}`;
     const interval = getEpochFromStringDate(customerUsage.intervalStart);
     const usage = customerUsage.usage.toString();
-    console.debug(type, interval, usage);
+    console.trace('Time map:',customerUsage.intervalStart, interval);
     const params = {
         Item: {
             Type: {

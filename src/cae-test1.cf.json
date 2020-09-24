@@ -220,6 +220,9 @@
             },
             "CUSTOMER_ROWS": {
               "Ref": "GFCULambdaEnvCustomerRows"
+            },
+            "CUSTOMER_USAGE_URL": {
+              "Fn::Sub": "https://${customerUsageApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${customerUsageIngestApiGatewayStage}/usage"
             }
           }
         }
@@ -934,6 +937,7 @@
       }
     },
     "customerUsageSqsTriggerLambda": {
+      "DependsOn": "lambdaCustomerUsageSqsTriggerExecutionPolicy",
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {

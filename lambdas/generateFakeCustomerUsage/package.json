@@ -1,6 +1,6 @@
 {
   "name": "generatefakecustomerusage",
-  "version": "1.0.27",
+  "version": "1.0.30",
   "description": "Generate fake customer usage data and write it to DynamoDB",
   "main": "handler.js",
   "scripts": {
@@ -30,6 +30,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.11.2"
+    "@babel/runtime-corejs3": "^7.11.2",
+    "axios": "^0.20.0"
   }
 }
