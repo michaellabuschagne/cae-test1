@@ -17,6 +17,10 @@
     "customerbillapi": {
       "version": "1.0.0",
       "directory": "customerbillapi"
+    },
+    "customerusagesqstrigger": {
+      "version": "1.0.0",
+      "directory": "customerUsageSqsTrigger"
     }
   },
   "strictMode": true

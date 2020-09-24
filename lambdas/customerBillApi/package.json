@@ -1,6 +1,6 @@
 {
   "name": "customerbillapi",
-  "version": "1.0.18",
+  "version": "1.0.22",
   "description": "Receives customer bill get requests and responds with DynamoDB query results",
   "main": "handler.js",
   "scripts": {
@@ -10,7 +10,8 @@
     "copy": "babel src package.json package-lock.json --out-dir dist --copy-files",
     "prod": "cross-env NODE_ENV=production npm install --prefix dist",
     "ver": "node -p 'require(\"./package.json\").version'",
-    "binary": "echo customerBillApi-v$(npm run --silent ver).zip",
+    "name": "node -p 'require(\"./package.json\").name'",
+    "binary": "echo $(npm run --silent name)-v$(npm run --silent ver).zip",
     "zip": "zip -rXFS9 $(npm run --silent binary) dist",
     "build": "npm run test && npm run clean && npm run copy && npm run prod && npm version patch && npm run zip",
     "s3upload": "aws s3 cp $(npm run --silent binary) s3://\"$npm_config_s3bucket\" --region \"$npm_config_region\""

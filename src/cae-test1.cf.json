@@ -33,18 +33,19 @@
     },
     "GenerateEnergyDataLambdaS3Key": {
       "Type": "String",
-      "Default": "generateFakeEnergyPricing-v3.zip",
       "Description": "The name of the generateFakeEnergyPricing binary"
     },
     "DynamoDbStreamHandlerLambdaS3Key": {
       "Type": "String",
-      "Default": "dynamoDbStreamHandler-v6.zip",
       "Description": "The name of the dynamoDbStreamHandler binary"
     },
     "QueryCustomerBillLambdaS3Key": {
       "Type": "String",
-      "Default": "customerBillApi-v5.zip",
       "Description": "The name of the customerBillApi binary"
+    },
+    "CustomerUsageSqsTriggerLambdaS3Key": {
+      "Type": "String",
+      "Description": "The name of the customerUsageSqsTrigger binary"
     }
   },
   "Outputs": {
@@ -705,19 +706,19 @@
     "customerUsageDataIngestDeadLetterQueue": {
       "Type": "AWS::SQS::Queue",
       "Properties": {
-        "QueueName": "IotCustomerUsageDataDLQ",
+        "QueueName": "CustomerUsageDataDLQ",
         "DelaySeconds": 0,
         "KmsMasterKeyId": "alias/aws/sqs",
         "MaximumMessageSize": 262144,
         "MessageRetentionPeriod": 1209600,
         "ReceiveMessageWaitTimeSeconds": 20,
-        "VisibilityTimeout": 0
+        "VisibilityTimeout": 60
       }
     },
     "customerUsageDataIngestQueue": {
       "Type": "AWS::SQS::Queue",
       "Properties": {
-        "QueueName": "IotCustomerUsageData",
+        "QueueName": "CustomerUsageData",
         "DelaySeconds": 0,
         "KmsMasterKeyId": "alias/aws/sqs",
         "MaximumMessageSize": 262144,
@@ -732,7 +733,7 @@
           },
           "maxReceiveCount": 3
         },
-        "VisibilityTimeout": 0
+        "VisibilityTimeout": 60
       }
     },
     "customerIngestSqsSendMessage": {
@@ -876,7 +877,7 @@
           ],
           "PassthroughBehavior": "NEVER",
           "RequestParameters": {
-            "integration.request.header.Content-Type": "\\'application/x-www-form-urlencoded\\'"
+            "integration.request.header.Content-Type": "'application/x-www-form-urlencoded'"
           },
           "RequestTemplates": {
             "application/json": "Action=SendMessage&MessageBody=$input.body"
@@ -931,6 +932,123 @@
         },
         "ValidateRequestBody": true
       }
+    },
+    "customerUsageSqsTriggerLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ArtifactsS3BucketName"
+          },
+          "S3Key": {
+            "Ref": "CustomerUsageSqsTriggerLambdaS3Key"
+          }
+        },
+        "Description": "Triggered by items added to Customer Usage Queue. Processes and writes messages to DynamoDB",
+        "Environment": {
+          "Variables": {
+            "DDB_TABLE_NAME": {
+              "Ref": "DynamoDBTableName"
+            }
+          }
+        },
+        "FunctionName": "CustomerUsageSqsTriggerLambda",
+        "Handler": "dist/handler.handleCustomerUsageDataIngest",
+        "MemorySize": 256,
+        "Role": {
+          "Fn::GetAtt": [
+            "lambdaCustomerUsageSqsTriggerExecutionRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs12.x",
+        "Timeout": 60
+      }
+    },
+    "lambdaCustomerUsageSqsTriggerExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Description": "Role for Lambdas which generate and push data to Dynamo DB",
+        "RoleName": "LambdaCustomerUsageSqsTriggerExecutionRole"
+      }
+    },
+    "lambdaCustomerUsageSqsTriggerExecutionPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cloudwatch:*",
+                "logs:*",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "caeDynamoDb",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::GetAtt": [
+                    "customerUsageDataIngestQueue",
+                    "Arn"
+                  ]
+                },
+                "arn:aws:cloudwatch:*:*:*",
+                "arn:aws:logs:*:*:*"
+              ]
+            }
+          ]
+        },
+        "PolicyName": "LambdaGenerateDataExecutionPolicy",
+        "Roles": [
+          "LambdaCustomerUsageSqsTriggerExecutionRole"
+        ]
+      }
+    },
+    "sqsCustomerUsageTrigger": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Properties": {
+        "BatchSize": 10,
+        "Enabled": true,
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "customerUsageDataIngestQueue",
+            "Arn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "customerUsageSqsTriggerLambda",
+            "Arn"
+          ]
+        }
+      }
     }
+
   }
 }
